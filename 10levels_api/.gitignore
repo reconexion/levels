@@ -4,3 +4,7 @@ __pycache__/
 venv/
 .env
 postgres_data/
+dev.db
+*.db
+.uvicorn.pid
+uvicorn.log
