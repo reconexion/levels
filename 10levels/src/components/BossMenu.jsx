@@ -1,14 +1,11 @@
-import { ArrowRight, Flash, Heart, Trophy01, Zap } from '@untitledui/icons'
-import { fetchLeaderboard, postLeaderboard } from '../api'
+import { ArrowRight, Flash, Heart, Trophy01, Users01, Zap } from '@untitledui/icons'
+import { useState } from 'react'
 import { Avatar } from './base/avatar/avatar'
 import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
-import { Input } from './base/input/input'
+import Pagination from './Pagination'
 import { bossTierNameForMonto } from '../game/bossTier'
 import { WEAPON_LEVELS, getPlayerMaxHp, nextUpgradeCost } from '../game/progression'
-import { colorForTag } from '../utils/color'
-import { useLocalStorage } from '../utils/useLocalStorage'
-import { useState } from 'react'
 
 const TIER_BADGE_COLOR = {
   Noob: 'gray',
@@ -22,6 +19,8 @@ const TIER_BADGE_COLOR = {
   Leyenda: 'pink',
   PRO: 'brand',
 }
+
+const JEFES_POR_PAGINA = 8
 
 // Rank 1/2/3 get a medal treatment; everyone else gets a plain numbered circle.
 const MEDAL_STYLE = [
@@ -96,55 +95,20 @@ export default function BossMenu({
   weaponLevel,
   onUpgradeWeapon,
   jefesVencidosTotal,
-  vencioTop1,
   stats,
 }) {
-  const [showLeaderboard, setShowLeaderboard] = useState(false)
-  const [leaderboard, setLeaderboard] = useState(null)
-  const [leaderboardError, setLeaderboardError] = useState(null)
-  const [nombre3, setNombre3] = useLocalStorage('10levels:nombre3', '')
-  const [saveState, setSaveState] = useState('idle') // idle | saving | saved | error
+  const [page, setPage] = useState(1)
 
   const upgradeCost = nextUpgradeCost(weaponLevel)
   const canUpgrade = upgradeCost != null && points >= upgradeCost
   const nextMaxHp = upgradeCost == null ? null : getPlayerMaxHp(weaponLevel + 1)
 
   const maxHpVisible = jefes.reduce((max, j) => Math.max(max, j.hp_max), 1)
-  const misTres = nombre3.trim().toUpperCase()
-
-  const openLeaderboard = async () => {
-    setShowLeaderboard(true)
-    setLeaderboardError(null)
-    try {
-      const data = await fetchLeaderboard()
-      setLeaderboard(data)
-    } catch {
-      setLeaderboardError('No se pudo cargar el leaderboard.')
-    }
-  }
-
-  const handleSaveScore = async (e) => {
-    e.preventDefault()
-    if (nombre3.trim().length !== 3) return
-    setSaveState('saving')
-    try {
-      await postLeaderboard({
-        nombre3Letras: nombre3.trim().toUpperCase(),
-        jefesVencidosTotal,
-        vencioTop1,
-      })
-      setSaveState('saved')
-      if (showLeaderboard) {
-        fetchLeaderboard().then(setLeaderboard).catch(() => {})
-      }
-    } catch {
-      setSaveState('error')
-    }
-  }
-
-  const maxLeaderboardScore = leaderboard?.length
-    ? Math.max(...leaderboard.map((e) => e.jefes_vencidos_total), 1)
-    : 1
+  const totalPages = Math.max(1, Math.ceil(jefes.length / JEFES_POR_PAGINA))
+  // Jefes can arrive/refresh after `page` was set (e.g. a payment confirms) — clamp
+  // here instead of in an effect so a stale page number never renders empty.
+  const currentPage = Math.min(page, totalPages)
+  const pageJefes = jefes.slice((currentPage - 1) * JEFES_POR_PAGINA, currentPage * JEFES_POR_PAGINA)
 
   return (
     <div className="min-h-svh bg-primary px-4 py-10 text-primary sm:px-8">
@@ -153,10 +117,10 @@ export default function BossMenu({
           <h1 className="text-display-sm font-semibold text-brand-secondary">10 LEVELS</h1>
           <p className="mt-1 text-md text-tertiary">Elige un jefe patrocinado y reta a ver quién es más fuerte.</p>
           {stats && (
-            <p className="text-sm text-quaternary">
-              {stats.jugadores_activos_estimado} jugadores activos · {formatMonto(stats.monto_total_recaudado)}{' '}
-              recaudados
-            </p>
+            <span className="inline-flex items-center gap-1.5 text-sm text-quaternary">
+              <Users01 className="size-4" />
+              {stats.jugadores_activos_estimado} jugadores activos
+            </span>
           )}
         </header>
 
@@ -215,187 +179,105 @@ export default function BossMenu({
           </Button>
         </section>
 
-        {loading && <JefesSkeleton />}
-        {error && (
-          <div className="flex flex-col items-center gap-3 text-error-primary">
-            <p>{error}</p>
-            <Button color="secondary" onClick={onRetry}>
-              Reintentar
-            </Button>
-          </div>
-        )}
-
-        {!loading && !error && (
-          <ul className="flex w-full flex-col gap-3">
-            {jefes.map((jefe, i) => {
-              const tierName = bossTierNameForMonto(jefe.monto_pagado)
-              const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
-              return (
-                <li
-                  key={jefe.id}
-                  style={{ animationDelay: `${i * 70}ms` }}
-                  className={
-                    'ranked-row group relative flex items-center gap-4 rounded-xl border bg-secondary p-4 pt-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg' +
-                    (jefe.es_top1 ? ' border-utility-yellow-300' : ' border-secondary')
-                  }
-                >
-                  <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
-                    <div
-                      className="absolute inset-0 opacity-[0.06] transition-opacity duration-300 group-hover:opacity-[0.12]"
-                      style={{ background: `linear-gradient(120deg, ${jefe.color_hex}, transparent 70%)` }}
-                    />
-                  </div>
-
-                  <RankBadge rank={i + 1} />
-
-                  {jefe.es_top1 && (
-                    <Badge className="absolute top-0 left-14 z-10" color="warning" size="sm">
-                      <span className="animate-pulse">★</span>&nbsp;TOP 1
-                    </Badge>
-                  )}
-
-                  <div
-                    className="relative z-10 shrink-0 rounded-[10px] p-0.5"
-                    style={{ background: jefe.color_hex }}
-                  >
-                    <Avatar src={jefe.logo_url} alt={jefe.nombre_marca} size="xl" rounded={false} />
-                  </div>
-
-                  <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <strong className="truncate text-md" style={{ color: jefe.color_hex }}>
-                        {jefe.nombre_marca}
-                      </strong>
-                      <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
-                        {tierName}
-                      </Badge>
-                    </div>
-                    <span className="text-sm font-medium text-tertiary">
-                      {formatMonto(jefe.monto_pagado)} pagados
-                    </span>
-                    {jefe.mensaje && <p className="truncate text-sm text-tertiary italic">“{jefe.mensaje}”</p>}
-                    <div className="flex flex-wrap gap-1.5">
-                      <StatPill icon={Heart}>{jefe.hp_max} HP</StatPill>
-                      <StatPill icon={Zap}>{jefe.danio_por_golpe} daño</StatPill>
-                      <StatPill icon={Flash}>cada {jefe.frecuencia_ataque_segundos}s</StatPill>
-                    </div>
-                    <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-tertiary">
-                      <div
-                        className="rank-bar-fill h-full rounded-full"
-                        style={{ width: `${hpPct}%`, background: jefe.color_hex }}
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    className="relative z-10"
-                    color="primary"
-                    iconTrailing={ArrowRight}
-                    onClick={() => onSelectJefe(jefe)}
-                  >
-                    Retar
-                  </Button>
-                </li>
-              )
-            })}
-            {jefes.length === 0 && <p className="text-center text-tertiary">Todavía no hay jefes activos.</p>}
-          </ul>
-        )}
-
         <section className="flex w-full flex-col gap-4 rounded-xl border border-secondary bg-secondary p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-brand-secondary">Leaderboard</h2>
-            <Button color="tertiary" size="sm" onClick={openLeaderboard}>
-              {showLeaderboard ? 'Actualizar' : 'Ver top 10'}
-            </Button>
+            <h2 className="text-lg font-semibold text-brand-secondary">Jefes patrocinados</h2>
+            {!loading && !error && jefes.length > 0 && (
+              <span className="text-sm text-quaternary">{jefes.length} activos</span>
+            )}
           </div>
 
-          {showLeaderboard && (
-            <>
-              {leaderboardError && <p className="text-error-primary">{leaderboardError}</p>}
-              {leaderboard && leaderboard.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <div className="hidden grid-cols-[2rem_2.25rem_1fr_auto] items-center gap-3 px-2 text-xs tracking-wide text-quaternary uppercase sm:grid">
-                    <span>#</span>
-                    <span />
-                    <span>Jugador</span>
-                    <span>Jefes vencidos</span>
-                  </div>
-                  {leaderboard.map((entry, i) => {
-                    const esYo = misTres.length === 3 && entry.nombre_3_letras === misTres
-                    const barPct = Math.max(6, Math.round((entry.jefes_vencidos_total / maxLeaderboardScore) * 100))
-                    return (
-                      <div
-                        key={entry.id}
-                        style={{ animationDelay: `${i * 60}ms` }}
-                        className={
-                          'ranked-row grid grid-cols-[2rem_2.25rem_1fr_auto] items-center gap-3 rounded-lg px-2 py-2 transition-colors duration-200 sm:grid-cols-[2rem_2.25rem_1fr_auto]' +
-                          (esYo ? ' bg-brand-secondary ring-1 ring-brand' : i % 2 === 0 ? ' bg-primary/40' : '')
-                        }
-                      >
-                        <RankBadge rank={i + 1} />
-                        <span
-                          aria-hidden
-                          className="flex size-8 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                          style={{ background: colorForTag(entry.nombre_3_letras) }}
-                        >
-                          {entry.nombre_3_letras}
-                        </span>
-                        <div className="flex min-w-0 flex-col gap-1">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-semibold text-primary">{entry.nombre_3_letras}</span>
-                            {esYo && (
-                              <Badge color="brand" size="sm">
-                                Tú
-                              </Badge>
-                            )}
-                            {entry.vencio_top1 && (
-                              <Badge color="warning" size="sm">
-                                ★ TOP 1
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-tertiary">
-                            <div
-                              className="rank-bar-fill h-full rounded-full bg-brand-solid"
-                              style={{ width: `${barPct}%` }}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-sm font-medium whitespace-nowrap text-tertiary">
-                          {entry.jefes_vencidos_total} jefes
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-              {leaderboard && leaderboard.length === 0 && (
-                <p className="text-tertiary">Todavía no hay puntuaciones.</p>
-              )}
-            </>
-          )}
-
-          <form className="flex flex-col gap-2 border-t border-secondary pt-4" onSubmit={handleSaveScore}>
-            <div className="flex items-end gap-2">
-              <Input
-                label="Guarda tu puntuación (3 letras)"
-                maxLength={3}
-                value={nombre3}
-                onChange={(value) => {
-                  setNombre3(value.replace(/[^a-zA-Z]/g, '').toUpperCase())
-                  setSaveState('idle')
-                }}
-                placeholder="ABC"
-                wrapperClassName="w-28"
-              />
-              <Button type="submit" color="primary" isDisabled={nombre3.length !== 3 || saveState === 'saving'}>
-                {saveState === 'saving' ? 'Guardando…' : 'Guardar'}
+          {loading && <JefesSkeleton />}
+          {error && (
+            <div className="flex flex-col items-center gap-3 py-6 text-error-primary">
+              <p>{error}</p>
+              <Button color="secondary" onClick={onRetry}>
+                Reintentar
               </Button>
             </div>
-            {saveState === 'saved' && <p className="text-sm text-success-primary">¡Guardado!</p>}
-            {saveState === 'error' && <p className="text-sm text-error-primary">No se pudo guardar, intenta de nuevo.</p>}
-          </form>
+          )}
+
+          {!loading && !error && (
+            <>
+              <ul className="flex w-full flex-col gap-3">
+                {pageJefes.map((jefe, i) => {
+                  const rank = (currentPage - 1) * JEFES_POR_PAGINA + i + 1
+                  const tierName = bossTierNameForMonto(jefe.monto_pagado)
+                  const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
+                  return (
+                    <li
+                      key={jefe.id}
+                      style={{ animationDelay: `${i * 70}ms` }}
+                      className={
+                        'ranked-row group relative flex items-center gap-4 rounded-xl border bg-primary p-4 pt-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg' +
+                        (jefe.es_top1 ? ' border-utility-yellow-300' : ' border-secondary')
+                      }
+                    >
+                      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
+                        <div
+                          className="absolute inset-0 opacity-[0.06] transition-opacity duration-300 group-hover:opacity-[0.12]"
+                          style={{ background: `linear-gradient(120deg, ${jefe.color_hex}, transparent 70%)` }}
+                        />
+                      </div>
+
+                      <RankBadge rank={rank} />
+
+                      {jefe.es_top1 && (
+                        <Badge className="absolute top-0 left-14 z-10" color="warning" size="sm">
+                          <span className="animate-pulse">★</span>&nbsp;TOP 1
+                        </Badge>
+                      )}
+
+                      <div
+                        className="relative z-10 shrink-0 rounded-[10px] p-0.5"
+                        style={{ background: jefe.color_hex }}
+                      >
+                        <Avatar src={jefe.logo_url} alt={jefe.nombre_marca} size="xl" rounded={false} />
+                      </div>
+
+                      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <strong className="truncate text-md" style={{ color: jefe.color_hex }}>
+                            {jefe.nombre_marca}
+                          </strong>
+                          <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
+                            {tierName}
+                          </Badge>
+                        </div>
+                        <span className="text-sm font-medium text-tertiary">
+                          {formatMonto(jefe.monto_pagado)} pagados
+                        </span>
+                        {jefe.mensaje && <p className="truncate text-sm text-tertiary italic">“{jefe.mensaje}”</p>}
+                        <div className="flex flex-wrap gap-1.5">
+                          <StatPill icon={Heart}>{jefe.hp_max} HP</StatPill>
+                          <StatPill icon={Zap}>{jefe.danio_por_golpe} daño</StatPill>
+                          <StatPill icon={Flash}>cada {jefe.frecuencia_ataque_segundos}s</StatPill>
+                        </div>
+                        <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-tertiary">
+                          <div
+                            className="rank-bar-fill h-full rounded-full"
+                            style={{ width: `${hpPct}%`, background: jefe.color_hex }}
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        className="relative z-10"
+                        color="primary"
+                        iconTrailing={ArrowRight}
+                        onClick={() => onSelectJefe(jefe)}
+                      >
+                        Retar
+                      </Button>
+                    </li>
+                  )
+                })}
+                {jefes.length === 0 && <p className="py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>}
+              </ul>
+
+              <Pagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
+            </>
+          )}
         </section>
       </div>
     </div>

@@ -28,13 +28,3 @@ class Jefe(Base):
     activo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     stripe_payment_intent_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     creado_en: Mapped[object] = mapped_column(DateTime, server_default=func.now())
-
-
-class Leaderboard(Base):
-    __tablename__ = "leaderboard"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    nombre_3_letras: Mapped[str] = mapped_column(String(3), nullable=False)
-    jefes_vencidos_total: Mapped[int] = mapped_column(Integer, nullable=False)
-    vencio_top1: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    creado_en: Mapped[object] = mapped_column(DateTime, server_default=func.now())

@@ -26,7 +26,6 @@ function App() {
   const [points, setPoints] = useLocalStorage('10levels:points', 0)
   const [weaponLevel, setWeaponLevel] = useLocalStorage('10levels:weaponLevel', 0)
   const [jefesVencidosTotal, setJefesVencidosTotal] = useLocalStorage('10levels:jefesVencidosTotal', 0)
-  const [vencioTop1, setVencioTop1] = useLocalStorage('10levels:vencioTop1', false)
 
   function loadJefes() {
     setJefesLoading(true)
@@ -56,10 +55,9 @@ function App() {
     setScreen('menu')
   }
 
-  const handleVictory = (jefe) => {
+  const handleVictory = () => {
     setPoints((p) => p + POINTS_PER_VICTORY)
     setJefesVencidosTotal((n) => n + 1)
-    if (jefe.es_top1) setVencioTop1(true)
     setTimeout(() => setScreen('menu'), RETURN_TO_MENU_DELAY_MS)
   }
 
@@ -108,7 +106,6 @@ function App() {
       weaponLevel={weaponLevel}
       onUpgradeWeapon={handleUpgradeWeapon}
       jefesVencidosTotal={jefesVencidosTotal}
-      vencioTop1={vencioTop1}
       stats={stats}
     />
   )

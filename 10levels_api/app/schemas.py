@@ -57,24 +57,7 @@ class AtacarResponse(BaseModel):
     derrotado: bool
 
 
-class LeaderboardCreate(BaseModel):
-    nombre_3_letras: str = Field(min_length=3, max_length=3)
-    jefes_vencidos_total: int = Field(ge=0)
-    vencio_top1: bool = False
-
-
-class LeaderboardOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    nombre_3_letras: str
-    jefes_vencidos_total: int
-    vencio_top1: bool
-    creado_en: datetime
-
-
 class StatsOut(BaseModel):
     jugadores_activos_estimado: int
-    monto_total_recaudado: float
     jefe_top1_actual: JefeOut | None
     stripe_configurado: bool

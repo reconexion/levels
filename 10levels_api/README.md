@@ -1,7 +1,7 @@
 # 10 Levels API
 
-Backend FastAPI + PostgreSQL para el juego 10 Levels (jefes patrocinados, pagos con Stripe,
-leaderboard). Ver el spec completo del proyecto para el detalle de mecánica y modelo de datos.
+Backend FastAPI + PostgreSQL para el juego 10 Levels (jefes patrocinados, pagos con Stripe).
+Ver el spec completo del proyecto para el detalle de mecánica y modelo de datos.
 
 ## Arranque local
 
@@ -28,7 +28,7 @@ La API queda en `http://localhost:8000` (docs interactivas en `/docs`).
 
 ## Estructura
 
-- `app/models.py` — tablas `jefes` y `leaderboard` (SQLAlchemy).
+- `app/models.py` — tabla `jefes` (SQLAlchemy).
 - `app/balance.py` — fórmulas hp_max/daño/frecuencia de ataque a partir de `monto_pagado`.
   Todos los valores de balance viven ahí; ajustar el juego no debería tocar los routers.
 - `app/top1.py` — lógica de disputa del puesto #1.
@@ -36,12 +36,12 @@ La API queda en `http://localhost:8000` (docs interactivas en `/docs`).
   (`sesion_id` la genera el frontend, no hay cuentas de usuario). En un despliegue con
   varios workers esto debería migrar a Redis.
 - `app/routers/` — un router por grupo de endpoints del spec (jefes, pagos, webhooks,
-  combate, leaderboard, stats).
+  combate, stats).
 - `seed.py` — crea las tablas y carga jefes de prueba para desarrollar el frontend sin Stripe.
 
 ## Pendiente (según prioridad del spec)
 
-- Conectar el frontend real a `/api/jefes` y `/api/leaderboard`.
+- Conectar el frontend real a `/api/jefes`.
 - Probar el flujo de Stripe con claves de test (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
   en `.env`, y `stripe listen --forward-to localhost:8000/api/webhooks/stripe`).
 - Rate limiting básico antes de manejar tráfico real.

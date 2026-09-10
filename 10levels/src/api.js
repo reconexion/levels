@@ -48,21 +48,6 @@ export function atacar({ jefeId, sesionId, danioInfligido }) {
   })
 }
 
-export function postLeaderboard({ nombre3Letras, jefesVencidosTotal, vencioTop1 }) {
-  return request('/api/leaderboard', {
-    method: 'POST',
-    body: JSON.stringify({
-      nombre_3_letras: nombre3Letras,
-      jefes_vencidos_total: jefesVencidosTotal,
-      vencio_top1: vencioTop1,
-    }),
-  })
-}
-
-export function fetchLeaderboard() {
-  return request('/api/leaderboard')
-}
-
 export function fetchStats() {
   return request('/api/stats')
 }
