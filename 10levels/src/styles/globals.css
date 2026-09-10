@@ -151,3 +151,114 @@ input[type="search"]::-webkit-search-cancel-button {
 .rank-crown {
     animation: crown-bounce 1.8s ease-in-out infinite;
 }
+
+/* ---- Boss skin preview (BossSkinPreview.jsx) ---- */
+
+@keyframes skin-aura-pulse {
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.skin-preview-aura {
+    animation: skin-aura-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes skin-neon-flicker {
+    0%,
+    18%,
+    22%,
+    100% {
+        filter: brightness(1);
+    }
+    20% {
+        filter: brightness(1.6);
+    }
+}
+
+.skin-preview-aura-neon {
+    animation:
+        skin-aura-pulse 1.1s ease-in-out infinite,
+        skin-neon-flicker 2.5s linear infinite;
+}
+
+.skin-preview-crooked {
+    transform: rotate(-5deg);
+}
+
+@keyframes skin-chrome-sweep {
+    0% {
+        background-position: -150% 0;
+    }
+    100% {
+        background-position: 150% 0;
+    }
+}
+
+.skin-preview-chrome {
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.65) 48%, transparent 66%);
+    background-size: 250% 100%;
+    animation: skin-chrome-sweep 2.2s ease-in-out infinite;
+    mix-blend-mode: overlay;
+}
+
+@keyframes skin-holo-shift {
+    0% {
+        filter: hue-rotate(0deg);
+    }
+    100% {
+        filter: hue-rotate(360deg);
+    }
+}
+
+.skin-preview-holo {
+    background: linear-gradient(120deg, #ff5ec8, #5ec8ff, #39ff9e, #ffd23f, #ff5ec8);
+    background-size: 300% 100%;
+    opacity: 0.55;
+    mix-blend-mode: color-dodge;
+    animation:
+        skin-holo-shift 4s linear infinite,
+        skin-chrome-sweep 3s ease-in-out infinite;
+}
+
+.skin-preview-gold-ring {
+    box-shadow: inset 0 0 0 2px rgba(255, 240, 194, 0.85);
+}
+
+@keyframes skin-particle-float {
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.skin-preview-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 9999px;
+    animation: skin-particle-float 1.8s ease-in-out infinite;
+}
+
+.skin-preview-eye-round {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7);
+}
+
+.skin-preview-eye-x {
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+}

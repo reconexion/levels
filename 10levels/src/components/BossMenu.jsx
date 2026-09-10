@@ -3,7 +3,9 @@ import { useState } from 'react'
 import { Avatar } from './base/avatar/avatar'
 import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
+import BossSkinPreview from './BossSkinPreview'
 import Pagination from './Pagination'
+import { bossStyleForSkinId } from '../game/bossSkins'
 import { bossTierNameForMonto } from '../game/bossTier'
 import { WEAPON_LEVELS, getPlayerMaxHp, nextUpgradeCost } from '../game/progression'
 
@@ -228,11 +230,17 @@ export default function BossMenu({
                         </Badge>
                       )}
 
-                      <div
-                        className="relative z-10 shrink-0 rounded-[10px] p-0.5"
-                        style={{ background: jefe.color_hex }}
-                      >
-                        <Avatar src={jefe.logo_url} alt={jefe.nombre_marca} size="xl" rounded={false} />
+                      <div className="relative z-10 flex shrink-0 flex-col items-center gap-1.5">
+                        <div
+                          className="rounded-[10px] p-0.5"
+                          style={{ background: jefe.color_hex }}
+                        >
+                          <Avatar src={jefe.logo_url} alt={jefe.nombre_marca} size="xl" rounded={false} />
+                        </div>
+                        <BossSkinPreview jefe={jefe} size={56} />
+                        <span className="text-[10px] leading-none text-quaternary">
+                          {bossStyleForSkinId(jefe.skin_id).name}
+                        </span>
                       </div>
 
                       <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-1.5">

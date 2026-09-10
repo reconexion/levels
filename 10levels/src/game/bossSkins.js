@@ -19,3 +19,14 @@ export const BOSS_STYLES = [
 export function bossStyleForSkinId(skinId) {
   return BOSS_STYLES.find((s) => s.id === skinId) || BOSS_STYLES[0]
 }
+
+// Same formula as PlatformerGame.jsx's shadeColorHex — duplicated (not imported) so
+// previewing a skin outside the fight doesn't have to pull in the whole canvas component.
+export function shadeColorHex(hex, percent) {
+  const num = parseInt(hex.slice(1), 16)
+  const clamp = (v) => Math.max(0, Math.min(255, v))
+  const r = clamp((num >> 16) + Math.round(2.55 * percent))
+  const g = clamp(((num >> 8) & 0xff) + Math.round(2.55 * percent))
+  const b = clamp((num & 0xff) + Math.round(2.55 * percent))
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
+}
