@@ -85,7 +85,7 @@ input[type="search"]::-webkit-search-cancel-button {
     animation: shimmer-sweep 1.6s ease-in-out infinite;
 }
 
-/* Sponsor CTA banner ("Supera a X y sé el jefe #1"): a soft pulsing glow behind
+/* Sponsor CTA banner ("Reclamar Rango"): a soft pulsing glow behind
    the card plus a breathing shadow ring on the button so it reads as the site's
    main call to action, not just another secondary button. */
 @keyframes cta-glow-pulse {

@@ -150,7 +150,7 @@ export default function BossMenu({
             iconLeading={Trophy01}
             onClick={onPatrocinar}
           >
-            {stats?.jefe_top1_actual ? 'Supéralo y sé el jefe #1' : 'Sé el primer jefe #1'}
+            {stats?.jefe_top1_actual ? 'Reclamar Rango' : 'Sé el primer jefe #1'}
           </Button>
         </section>
 
