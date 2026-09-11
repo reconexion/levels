@@ -19,10 +19,32 @@ export const WEAPON_LEVELS = [
   { id: 'shark', name: '3. Shark', damage: 21, fireRate: 0.07 },
 ]
 
+export const MAX_WEAPON_LEVEL = WEAPON_LEVELS.length - 1
+
+export function isWeaponMaxed(weaponLevel) {
+  return weaponLevel >= MAX_WEAPON_LEVEL
+}
+
+// Once the Shark is maxed, points stop buying a new gun and start buying raw power
+// instead — flat cost per purchase, stacking with no cap other than your point balance.
+export const POST_MAX_UPGRADE_COST = 150
+export const BONUS_HP_PER_LEVEL = 15
+export const BONUS_DAMAGE_PER_LEVEL = 3
+
+// The cost of the *next* upgrade regardless of whether it's a new weapon or a
+// post-max power boost — the one thing the "Mejorar" button needs to know.
+export function upgradeCostFor(weaponLevel) {
+  return isWeaponMaxed(weaponLevel) ? POST_MAX_UPGRADE_COST : nextUpgradeCost(weaponLevel)
+}
+
 // Every weapon upgrade also toughens the player up — more life to survive stronger jefes.
 export const PLAYER_HP_BASE = 100
 export const PLAYER_HP_PER_WEAPON_LEVEL = 50
 
-export function getPlayerMaxHp(weaponLevel) {
-  return PLAYER_HP_BASE + weaponLevel * PLAYER_HP_PER_WEAPON_LEVEL
+export function getPlayerMaxHp(weaponLevel, bonusLevel = 0) {
+  return PLAYER_HP_BASE + weaponLevel * PLAYER_HP_PER_WEAPON_LEVEL + bonusLevel * BONUS_HP_PER_LEVEL
+}
+
+export function getBonusDamage(bonusLevel = 0) {
+  return bonusLevel * BONUS_DAMAGE_PER_LEVEL
 }

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from './base/buttons/button'
 import BossCard from './BossCard'
 import Pagination from './Pagination'
-import { WEAPON_LEVELS, getPlayerMaxHp, nextUpgradeCost } from '../game/progression'
+import { WEAPON_LEVELS, getPlayerMaxHp, isWeaponMaxed, upgradeCostFor } from '../game/progression'
 
 const JEFES_POR_PAGINA = 8
 
@@ -34,15 +34,18 @@ export default function BossMenu({
   onPatrocinar,
   points,
   weaponLevel,
+  bonusLevel,
   onUpgradeWeapon,
   jefesVencidosTotal,
   stats,
 }) {
   const [page, setPage] = useState(1)
 
-  const upgradeCost = nextUpgradeCost(weaponLevel)
-  const canUpgrade = upgradeCost != null && points >= upgradeCost
-  const nextMaxHp = upgradeCost == null ? null : getPlayerMaxHp(weaponLevel + 1)
+  const maxed = isWeaponMaxed(weaponLevel)
+  const upgradeCost = upgradeCostFor(weaponLevel)
+  const canUpgrade = points >= upgradeCost
+  const currentMaxHp = getPlayerMaxHp(weaponLevel, bonusLevel)
+  const nextMaxHp = maxed ? getPlayerMaxHp(weaponLevel, bonusLevel + 1) : getPlayerMaxHp(weaponLevel + 1, bonusLevel)
 
   const maxHpVisible = jefes.reduce((max, j) => Math.max(max, j.hp_max), 1)
   const totalPages = Math.max(1, Math.ceil(jefes.length / JEFES_POR_PAGINA))
@@ -100,13 +103,16 @@ export default function BossMenu({
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-xs tracking-wide text-quaternary uppercase">Arma</span>
-            <strong className="text-lg text-primary">{WEAPON_LEVELS[weaponLevel].name}</strong>
+            <strong className="text-lg text-primary">
+              {WEAPON_LEVELS[weaponLevel].name}
+              {maxed && bonusLevel > 0 && <span className="text-brand-secondary"> +{bonusLevel}</span>}
+            </strong>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-xs tracking-wide text-quaternary uppercase">Vida máxima</span>
             <strong className="flex items-center gap-1 text-lg text-primary">
               <Heart className="size-4 text-error-primary" />
-              {getPlayerMaxHp(weaponLevel)}
+              {currentMaxHp}
             </strong>
           </div>
           <div className="flex flex-col gap-0.5">
@@ -114,8 +120,8 @@ export default function BossMenu({
             <strong className="text-lg text-primary">{jefesVencidosTotal}</strong>
           </div>
           <Button className="ml-auto" color="primary" isDisabled={!canUpgrade} onClick={onUpgradeWeapon}>
-            {upgradeCost == null
-              ? 'Arma al máximo'
+            {maxed
+              ? `Mejorar daño y vida (${upgradeCost} pts) → ${nextMaxHp} HP`
               : `Mejorar arma (${upgradeCost} pts) → ${nextMaxHp} HP`}
           </Button>
         </section>

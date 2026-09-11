@@ -15,6 +15,7 @@ MARCAS_DE_PRUEBA = [
         "color_hex": "#ff5d5d",
         "skin_id": "pro",
         "mensaje": "¿Te atreves a retarme?",
+        "link_url": "https://example.com/cyberdyne-sodas",
         "monto_pagado": 5000,
     },
     {
@@ -23,6 +24,7 @@ MARCAS_DE_PRUEBA = [
         "color_hex": "#4d9bff",
         "skin_id": "maestro",
         "mensaje": "Tacos de vapor, golpes de acero.",
+        "link_url": "https://example.com/nimbus-tacos",
         "monto_pagado": 2500,
     },
     {
@@ -31,6 +33,7 @@ MARCAS_DE_PRUEBA = [
         "color_hex": "#4ddc8a",
         "skin_id": "experto",
         "mensaje": None,
+        "link_url": None,
         "monto_pagado": 900,
     },
     {
@@ -39,6 +42,7 @@ MARCAS_DE_PRUEBA = [
         "color_hex": "#ffd23f",
         "skin_id": "amateur",
         "mensaje": "Todavía estoy calentando.",
+        "link_url": "https://example.com/chido-games",
         "monto_pagado": 150,
     },
 ]
@@ -61,6 +65,7 @@ def run():
                 color_hex=marca["color_hex"],
                 skin_id=marca["skin_id"],
                 mensaje=marca["mensaje"],
+                link_url=marca["link_url"],
                 monto_pagado=marca["monto_pagado"],
                 hp_max=stats["hp_max"],
                 danio_por_golpe=stats["danio_por_golpe"],

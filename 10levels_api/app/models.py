@@ -20,6 +20,7 @@ class Jefe(Base):
     color_hex: Mapped[str] = mapped_column(String(7), nullable=False)
     skin_id: Mapped[str] = mapped_column(String(20), nullable=False, default="noob")
     mensaje: Mapped[str | None] = mapped_column(String(140), nullable=True)
+    link_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     monto_pagado: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     hp_max: Mapped[int] = mapped_column(Integer, nullable=False)
     danio_por_golpe: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False)

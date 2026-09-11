@@ -3,7 +3,7 @@ import { sileo, Toaster } from 'sileo'
 import 'sileo/styles.css'
 import { atacar as apiAtacar, iniciarCombate } from '../api'
 import { bossStyleForSkinId } from './bossSkins'
-import { getPlayerMaxHp } from './progression'
+import { getBonusDamage, getPlayerMaxHp } from './progression'
 import './PlatformerGame.css'
 import gunNormalSrc from '../assets/predeterminado.png'
 import gunRedSrc from '../assets/red.png'
@@ -320,7 +320,7 @@ function aabbOverlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
 }
 
-export default function PlatformerGame({ jefe, weaponLevel, sesionId, onVictory, onExit }) {
+export default function PlatformerGame({ jefe, weaponLevel, bonusLevel = 0, sesionId, onVictory, onExit }) {
   const canvasRef = useRef(null)
   const colorRef = useRef(0)
   const faceRef = useRef(0)
@@ -434,7 +434,7 @@ export default function PlatformerGame({ jefe, weaponLevel, sesionId, onVictory,
     const bossColorB = shadeColorHex(jefe.color_hex, 45)
     const bossStyle = bossStyleForSkinId(jefe.skin_id)
     const dmgMult = jefe.danio_por_golpe / CONTACT_DAMAGE
-    const playerMaxHp = getPlayerMaxHp(weaponLevel)
+    const playerMaxHp = getPlayerMaxHp(weaponLevel, bonusLevel)
 
     const bossLogoImage = new Image()
     bossLogoImage.crossOrigin = 'anonymous'
@@ -605,7 +605,7 @@ export default function PlatformerGame({ jefe, weaponLevel, sesionId, onVictory,
         vx: Math.cos(angle) * BULLET_SPEED,
         vy: Math.sin(angle) * BULLET_SPEED,
         life: BULLET_LIFE,
-        damage: level.damage,
+        damage: level.damage + getBonusDamage(bonusLevel),
       })
       spawnMuzzleFlash(muzzleX, muzzleY)
       player.gunKick = 1
@@ -2735,7 +2735,8 @@ export default function PlatformerGame({ jefe, weaponLevel, sesionId, onVictory,
       <div className="platformer-controls">
         <div className="platformer-customize">
           <span className="platformer-customize-label">
-            Arma: {GUN_LEVELS[weaponLevel].name} · Daño {GUN_LEVELS[weaponLevel].damage} · Cadencia{' '}
+            Arma: {GUN_LEVELS[weaponLevel].name}
+            {bonusLevel > 0 ? ` +${bonusLevel}` : ''} · Daño {GUN_LEVELS[weaponLevel].damage + getBonusDamage(bonusLevel)} · Cadencia{' '}
             {GUN_LEVELS[weaponLevel].fireRate.toFixed(2)}s
           </span>
         </div>

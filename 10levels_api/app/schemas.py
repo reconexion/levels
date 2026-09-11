@@ -17,6 +17,7 @@ class JefeOut(BaseModel):
     color_hex: str
     skin_id: str
     mensaje: str | None
+    link_url: str | None
     monto_pagado: float
     hp_max: int
     danio_por_golpe: float
@@ -31,6 +32,7 @@ class CrearCheckoutRequest(BaseModel):
     color_hex: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
     skin_id: SkinId
     mensaje: str | None = Field(default=None, max_length=140)
+    link_url: str | None = Field(default=None, max_length=500)
     monto_deseado: float = Field(gt=0)
 
 

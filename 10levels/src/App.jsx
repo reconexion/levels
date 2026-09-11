@@ -4,7 +4,7 @@ import BossMenu from './components/BossMenu'
 import Patrocinar from './components/Patrocinar'
 import RainBackground from './components/RainBackground'
 import PlatformerGame from './game/PlatformerGame'
-import { POINTS_PER_VICTORY, WEAPON_UPGRADE_COSTS, nextUpgradeCost } from './game/progression'
+import { MAX_WEAPON_LEVEL, POINTS_PER_VICTORY, isWeaponMaxed, upgradeCostFor } from './game/progression'
 import { useLocalStorage } from './utils/useLocalStorage'
 
 const RETURN_TO_MENU_DELAY_MS = 2600
@@ -26,6 +26,9 @@ function App() {
   // Persisted to localStorage so progress survives a reload or the tab closing.
   const [points, setPoints] = useLocalStorage('10levels:points', 0)
   const [weaponLevel, setWeaponLevel] = useLocalStorage('10levels:weaponLevel', 0)
+  // Extra damage/HP boosts bought after the weapon is maxed — uncapped, only limited
+  // by how many points you have.
+  const [bonusLevel, setBonusLevel] = useLocalStorage('10levels:bonusLevel', 0)
   const [jefesVencidosTotal, setJefesVencidosTotal] = useLocalStorage('10levels:jefesVencidosTotal', 0)
 
   function loadJefes() {
@@ -63,10 +66,14 @@ function App() {
   }
 
   const handleUpgradeWeapon = () => {
-    const cost = nextUpgradeCost(weaponLevel)
-    if (cost == null || points < cost) return
+    const cost = upgradeCostFor(weaponLevel)
+    if (points < cost) return
     setPoints((p) => p - cost)
-    setWeaponLevel((l) => Math.min(WEAPON_UPGRADE_COSTS.length - 1, l + 1))
+    if (isWeaponMaxed(weaponLevel)) {
+      setBonusLevel((b) => b + 1)
+    } else {
+      setWeaponLevel((l) => Math.min(MAX_WEAPON_LEVEL, l + 1))
+    }
   }
 
   let screenContent
@@ -76,6 +83,7 @@ function App() {
         key={`${selectedJefe.id}-${sesionId}`}
         jefe={selectedJefe}
         weaponLevel={weaponLevel}
+        bonusLevel={bonusLevel}
         sesionId={sesionId}
         onVictory={handleVictory}
         onExit={handleExitFight}
@@ -103,6 +111,7 @@ function App() {
         onPatrocinar={() => setScreen('patrocinar')}
         points={points}
         weaponLevel={weaponLevel}
+        bonusLevel={bonusLevel}
         onUpgradeWeapon={handleUpgradeWeapon}
         jefesVencidosTotal={jefesVencidosTotal}
         stats={stats}

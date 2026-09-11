@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, CheckCircle, CurrencyDollarCircle } from '@untitledui/icons'
+import { AlertTriangle, ArrowLeft, CheckCircle, CurrencyDollarCircle, LinkExternal01 } from '@untitledui/icons'
 import { useEffect, useRef, useState } from 'react'
 import { crearCheckout, fetchJefe } from '../api'
 import BossSkinPreview from './BossSkinPreview'
@@ -17,12 +17,21 @@ function formatMonto(monto) {
   }).format(monto)
 }
 
+// Sponsors often type "misitio.com" without a scheme — add one so the card's link
+// actually navigates instead of being treated as a relative path.
+function normalizeUrl(url) {
+  const trimmed = url.trim()
+  if (!trimmed) return ''
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
 export default function Patrocinar({ stats, onBack }) {
   const [nombreMarca, setNombreMarca] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [colorHex, setColorHex] = useState('#f97316')
   const [skinId, setSkinId] = useState(BOSS_STYLES[0].id)
   const [mensaje, setMensaje] = useState('')
+  const [linkUrl, setLinkUrl] = useState('')
   const [montoDeseado, setMontoDeseado] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
@@ -96,6 +105,7 @@ export default function Patrocinar({ stats, onBack }) {
         colorHex,
         skinId,
         mensaje: mensaje.trim(),
+        linkUrl: normalizeUrl(linkUrl),
         montoDeseado: monto,
       })
       window.location.href = checkout_url
@@ -256,6 +266,14 @@ export default function Patrocinar({ stats, onBack }) {
             placeholder="¿Te atreves a retarme?"
             value={mensaje}
             onChange={setMensaje}
+          />
+          <Input
+            label="Link de tu página (opcional)"
+            hint="Se muestra como botón en su tarjeta para que jueguen y visiten tu sitio."
+            icon={LinkExternal01}
+            placeholder="tusitio.com"
+            value={linkUrl}
+            onChange={setLinkUrl}
           />
           <div className="flex flex-col gap-1.5">
             <Input

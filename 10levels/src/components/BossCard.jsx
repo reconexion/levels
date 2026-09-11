@@ -1,4 +1,4 @@
-import { ArrowRight, Flash, Zap } from '@untitledui/icons'
+import { ArrowRight, Flash, LinkExternal01, Zap } from '@untitledui/icons'
 import { Avatar } from './base/avatar/avatar'
 import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
@@ -13,6 +13,14 @@ function formatMonto(monto) {
     currency: 'MXN',
     maximumFractionDigits: 0,
   }).format(monto)
+}
+
+function formatHost(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    return url
+  }
 }
 
 // The blob-shaped card background — same path/viewBox as the uiverse.io weather-card
@@ -112,6 +120,18 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
             <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
             <p className="truncate text-md font-bold">{jefe.nombre_marca}</p>
             {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
+            {jefe.link_url && (
+              <a
+                href={jefe.link_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-white/80 underline decoration-white/40 underline-offset-2 hover:text-white hover:decoration-white"
+              >
+                <LinkExternal01 className="size-3 shrink-0" />
+                <span className="truncate">{formatHost(jefe.link_url)}</span>
+              </a>
+            )}
           </div>
           <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
             Retar
