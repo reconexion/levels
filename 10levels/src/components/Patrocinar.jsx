@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowLeft, CheckCircle, CurrencyDollarCircle } from '@untitledui/icons'
 import { useEffect, useRef, useState } from 'react'
 import { crearCheckout, fetchJefe } from '../api'
+import BossSkinPreview from './BossSkinPreview'
 import { Button } from './base/buttons/button'
 import { Input } from './base/input/input'
 import { BOSS_STYLES } from '../game/bossSkins'
@@ -221,6 +222,7 @@ export default function Patrocinar({ stats, onBack }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="text-sm font-medium text-secondary">Skin de tu jefe</span>
+            <span className="text-xs text-quaternary">Cada opción se ve con tu propio color de marca.</span>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {BOSS_STYLES.map((style) => (
                 <button
@@ -234,10 +236,7 @@ export default function Patrocinar({ stats, onBack }) {
                       : ' border-secondary bg-primary hover:border-brand')
                   }
                 >
-                  <span
-                    className="size-8 rounded-full"
-                    style={{ background: `linear-gradient(135deg, ${style.colorA}, ${style.colorB})` }}
-                  />
+                  <BossSkinPreview jefe={{ color_hex: colorHex, skin_id: style.id }} size={40} />
                   <span className="text-xs leading-tight text-secondary">{style.name}</span>
                 </button>
               ))}
