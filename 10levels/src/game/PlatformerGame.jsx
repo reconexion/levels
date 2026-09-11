@@ -1,7 +1,18 @@
 import { useEffect, useRef } from 'react'
 import { sileo, Toaster } from 'sileo'
 import 'sileo/styles.css'
-import { ArrowLeft, Image03, Palette, RefreshCcw01, Target02, UserCircle, Zap } from '@untitledui/icons'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Image03,
+  Palette,
+  RefreshCcw01,
+  Target02,
+  UserCircle,
+  Zap,
+} from '@untitledui/icons'
 import { atacar as apiAtacar, iniciarCombate } from '../api'
 import { bossStyleForSkinId } from './bossSkins'
 import { getBonusDamage, getPlayerMaxHp, isWeaponMaxed } from './progression'
@@ -561,6 +572,11 @@ export default function PlatformerGame({
     window.addEventListener('mousedown', onMouseDown)
     window.addEventListener('mouseup', onMouseUp)
     window.addEventListener('blur', onBlur)
+
+    // Touch devices have no cursor to aim with, so the gun auto-aims at the boss instead
+    // (the only target there is to aim at) — on-screen buttons drive movement/jump/fire.
+    const touchAimActive =
+      typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches
 
     let fireCooldown = 0
     let shakeTrauma = 0
@@ -1141,6 +1157,13 @@ export default function PlatformerGame({
         ? (player.vx / MAX_SPEED) * 8
         : (player.vx / MAX_SPEED) * 5
       player.lean = approach(player.lean, leanTarget, 8, dt)
+
+      // On touch devices there's no cursor position to aim with, so lock the aim
+      // point onto the boss every frame instead — the only sensible target anyway.
+      if (touchAimActive) {
+        mouse.x = boss.x + boss.w / 2
+        mouse.y = boss.y + boss.h * 0.42
+      }
 
       // Gun aims at the mouse cursor, held out away from the body
       const shoulderX = player.x + PLAYER_W / 2
@@ -2757,7 +2780,22 @@ export default function PlatformerGame({
       drawCrosshair()
     }
 
-    gameControlsRef.current = { resetFight }
+    // Driven by the on-screen touch buttons (movement/fire reuse the same `keys`
+    // Set and `firing` flag the keyboard/mouse handlers above already feed).
+    function pressMoveKey(code) {
+      keys.add(code)
+    }
+    function releaseMoveKey(code) {
+      keys.delete(code)
+    }
+    function triggerJump() {
+      player.jumpBuffer = JUMP_BUFFER
+    }
+    function setFiring(active) {
+      firing = active
+    }
+
+    gameControlsRef.current = { resetFight, pressMoveKey, releaseMoveKey, triggerJump, setFiring }
 
     function loop(now) {
       let dt = (now - lastTime) / 1000
@@ -2819,7 +2857,64 @@ export default function PlatformerGame({
           “{jefe.mensaje}”
         </p>
       )}
-      <canvas ref={canvasRef} className="platformer-canvas" />
+      <div className="platformer-canvas-wrap">
+        <canvas ref={canvasRef} className="platformer-canvas" />
+        {/* Touch-only on-screen controls (hidden on mouse/trackpad via CSS) — the gun
+            auto-aims at the boss on touch devices, so there's no separate aim control. */}
+        <div className="platformer-touch-controls" aria-hidden="true">
+          <div className="platformer-touch-move">
+            <button
+              type="button"
+              className="platformer-touch-btn"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                gameControlsRef.current?.pressMoveKey('ArrowLeft')
+              }}
+              onPointerUp={() => gameControlsRef.current?.releaseMoveKey('ArrowLeft')}
+              onPointerLeave={() => gameControlsRef.current?.releaseMoveKey('ArrowLeft')}
+              onPointerCancel={() => gameControlsRef.current?.releaseMoveKey('ArrowLeft')}
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              type="button"
+              className="platformer-touch-btn"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                gameControlsRef.current?.pressMoveKey('ArrowRight')
+              }}
+              onPointerUp={() => gameControlsRef.current?.releaseMoveKey('ArrowRight')}
+              onPointerLeave={() => gameControlsRef.current?.releaseMoveKey('ArrowRight')}
+              onPointerCancel={() => gameControlsRef.current?.releaseMoveKey('ArrowRight')}
+            >
+              <ChevronRight />
+            </button>
+          </div>
+          <button
+            type="button"
+            className="platformer-touch-btn platformer-touch-jump"
+            onPointerDown={(e) => {
+              e.preventDefault()
+              gameControlsRef.current?.triggerJump()
+            }}
+          >
+            <ChevronUp />
+          </button>
+          <button
+            type="button"
+            className="platformer-touch-btn platformer-touch-fire"
+            onPointerDown={(e) => {
+              e.preventDefault()
+              gameControlsRef.current?.setFiring(true)
+            }}
+            onPointerUp={() => gameControlsRef.current?.setFiring(false)}
+            onPointerLeave={() => gameControlsRef.current?.setFiring(false)}
+            onPointerCancel={() => gameControlsRef.current?.setFiring(false)}
+          >
+            {t('Fire')}
+          </button>
+        </div>
+      </div>
       <div className="platformer-controls">
         <div className="platformer-stat-strip">
           <Zap className="platformer-group-icon" aria-hidden="true" />
@@ -2957,7 +3052,7 @@ export default function PlatformerGame({
           </div>
         </div>
       </div>
-      <p className="platformer-hint">
+      <p className="platformer-hint platformer-hint-pointer">
         <span>
           <kbd>WASD</kbd> / <kbd>{t('Arrows')}</kbd> {t('to move')}
         </span>
@@ -2968,6 +3063,7 @@ export default function PlatformerGame({
         <span className="platformer-hint-dot" aria-hidden="true" />
         <span>{t('Click to shoot at the boss')}</span>
       </p>
+      <p className="platformer-hint platformer-hint-touch">{t('Use the on-screen buttons to move, jump, and fire.')}</p>
     </div>
   )
 }

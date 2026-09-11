@@ -144,6 +144,8 @@ export const translations = {
     'Beach (Day)': 'Playa (Día)',
     'Beach (Night)': 'Playa (Noche)',
     Skin: 'Skin',
+    Fire: 'Fuego',
+    'Use the on-screen buttons to move, jump, and fire.': 'Usa los botones en pantalla para moverte, saltar y disparar.',
     'Weapon skin': 'Skin de arma',
     Face: 'Cara',
     Color: 'Color',
