@@ -64,8 +64,8 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
             }
         ],
         metadata={"jefe_id": str(jefe.id)},
-        success_url=f"{settings.frontend_url}/?patrocinio=exito&jefe_id={jefe.id}",
-        cancel_url=f"{settings.frontend_url}/?patrocinio=cancelado",
+        success_url=f"{settings.frontend_url}/patrocinar?patrocinio=exito&jefe_id={jefe.id}",
+        cancel_url=f"{settings.frontend_url}/patrocinar?patrocinio=cancelado",
     )
 
     return CrearCheckoutResponse(checkout_url=session.url, jefe_id=jefe.id)

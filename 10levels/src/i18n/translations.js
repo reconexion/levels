@@ -29,6 +29,8 @@ export const translations = {
     Retry: 'Reintentar',
     'Could not connect to the API. Is the backend running?':
       'No se pudo conectar con la API. ¿Está corriendo el backend?',
+    'This boss doesn’t exist or is no longer active.': 'Este jefe no existe o ya no está activo.',
+    'Page not found.': 'Página no encontrada.',
 
     // Boss card
     Challenge: 'Retar',
@@ -65,21 +67,26 @@ export const translations = {
     'Payment cancelled. You can try again whenever you want.': 'Pago cancelado. Puedes intentarlo de nuevo cuando quieras.',
     'Payments aren’t active in this environment yet (Stripe isn’t configured on the backend). You can fill out the form, but the charge won’t process until the keys are added.':
       'Los pagos todavía no están activos en este entorno (falta configurar Stripe en el backend). Puedes rellenar el formulario, pero el cobro no se procesará hasta que se agreguen las claves.',
+    'Brand identity': 'Identidad de marca',
     'Your brand name': 'Nombre de tu marca',
     'Your logo URL': 'URL de tu logo',
     'Ideally square (128×128 or bigger).': 'Idealmente cuadrado (128×128 o más).',
     'Brand color': 'Color de marca',
     'Color picker': 'Selector de color',
-    "Your boss's skin": 'Skin de tu jefe',
-    'Each option shows with your own brand color.': 'Cada opción se ve con tu propio color de marca.',
+    'Category & style': 'Categoría y estilo',
     Category: 'Categoría',
-    'Select a category': 'Selecciona una categoría',
     'Helps people find you in the boss search.': 'Ayuda a que te encuentren en el buscador de jefes.',
+    "Your boss's style": 'El estilo de tu jefe',
+    'Matched automatically to your category — not picked directly.':
+      'Se asigna automáticamente según tu categoría — no se elige directamente.',
+    'Pick a category above to preview your boss’s style.': 'Elige una categoría arriba para ver el estilo de tu jefe.',
+    'Message & link': 'Mensaje y link',
     "Your boss's message (optional)": 'Mensaje de tu jefe (opcional)',
     'Shown on its menu card and when the fight starts.': 'Se muestra en su tarjeta del menú y al iniciar la pelea contra él.',
     'Dare to challenge me?': '¿Te atreves a retarme?',
     'Your page link': 'Link de tu página',
     'Clicking your boss’s name takes people here.': 'Al hacer clic en el nombre de tu jefe, la gente llega aquí.',
+    Payment: 'Pago',
     'Amount to pay': 'Monto a pagar',
     'Charged in US dollars (USD) — the same currency shown across the site.':
       'Se cobra en dólares estadounidenses (USD) — la misma moneda que se muestra en todo el sitio.',
