@@ -81,6 +81,8 @@ export const translations = {
     'Your page link': 'Link de tu página',
     'Clicking your boss’s name takes people here.': 'Al hacer clic en el nombre de tu jefe, la gente llega aquí.',
     'Amount to pay': 'Monto a pagar',
+    'Charged in US dollars (USD) — the same currency shown across the site.':
+      'Se cobra en dólares estadounidenses (USD) — la misma moneda que se muestra en todo el sitio.',
     '🏆 With this amount you’ll be the #1 boss!': '🏆 ¡Con este monto serás el jefe #1!',
     'Your boss joins the list. Pay more than {amount} to be #1.': 'Tu jefe se une a la lista. Paga más de {amount} para ser el #1.',
     'Pay and be the #1 boss': 'Pagar y ser el jefe #1',

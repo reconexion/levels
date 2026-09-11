@@ -12,10 +12,14 @@ import logoSrc from '../assets/logologo.png'
 
 const JEFES_POR_PAGINA = 8
 
+// currencyDisplay: 'code' always renders "USD 1,234" instead of a bare "$" — the same
+// symbol Mexican pesos use, which is exactly the mismatch that confused sponsors when
+// the page showed one currency label and Stripe Checkout charged in another.
 function formatMonto(monto, lang) {
   return new Intl.NumberFormat(lang === 'es' ? 'es-MX' : 'en-US', {
     style: 'currency',
-    currency: 'MXN',
+    currency: 'USD',
+    currencyDisplay: 'code',
     maximumFractionDigits: 0,
   }).format(monto)
 }

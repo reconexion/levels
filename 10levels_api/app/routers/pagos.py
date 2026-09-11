@@ -50,7 +50,11 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
         line_items=[
             {
                 "price_data": {
-                    "currency": "mxn",
+                    # Must match the currency shown on the frontend's price labels
+                    # (formatMonto everywhere uses Intl currency "USD") — otherwise the
+                    # amount a sponsor sees on the boss list/form doesn't match what
+                    # Stripe Checkout actually charges them.
+                    "currency": "usd",
                     "unit_amount": round(payload.monto_deseado * 100),
                     "product_data": {
                         "name": f"Levels — jefe patrocinado: {payload.nombre_marca}",
