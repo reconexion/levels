@@ -4,8 +4,9 @@
 export const POINTS_PER_VICTORY = 50
 
 // Cost in points to reach that weapon level (index) from the previous one.
-// Index 0 (starting weapon) has no cost.
-export const WEAPON_UPGRADE_COSTS = [null, 100, 250]
+// Index 0 (starting weapon) has no cost. Each tier costs noticeably more than the
+// last, so the grind ramps up rather than staying flat.
+export const WEAPON_UPGRADE_COSTS = [null, 100, 280, 600]
 
 export function nextUpgradeCost(currentLevel) {
   return WEAPON_UPGRADE_COSTS[currentLevel + 1] ?? null
@@ -17,6 +18,7 @@ export const WEAPON_LEVELS = [
   { id: 'normal', name: '1. Normal', damage: 9, fireRate: 0.14 },
   { id: 'red', name: '2. Red', damage: 14, fireRate: 0.1 },
   { id: 'shark', name: '3. Shark', damage: 21, fireRate: 0.07 },
+  { id: 'danger', name: '4. Danger', damage: 30, fireRate: 0.055 },
 ]
 
 export const MAX_WEAPON_LEVEL = WEAPON_LEVELS.length - 1
@@ -25,16 +27,22 @@ export function isWeaponMaxed(weaponLevel) {
   return weaponLevel >= MAX_WEAPON_LEVEL
 }
 
-// Once the Shark is maxed, points stop buying a new gun and start buying raw power
-// instead — flat cost per purchase, stacking with no cap other than your point balance.
-export const POST_MAX_UPGRADE_COST = 150
+// Once Danger is maxed, points stop buying a new gun and start buying raw power
+// instead. Cost climbs with every purchase — no hard cap, but each boost is harder
+// to afford than the last, same spirit as the weapon tiers above.
+export const POST_MAX_BASE_COST = 200
+export const POST_MAX_COST_STEP = 60
 export const BONUS_HP_PER_LEVEL = 15
 export const BONUS_DAMAGE_PER_LEVEL = 3
 
+export function postMaxUpgradeCost(bonusLevel) {
+  return POST_MAX_BASE_COST + bonusLevel * POST_MAX_COST_STEP
+}
+
 // The cost of the *next* upgrade regardless of whether it's a new weapon or a
 // post-max power boost — the one thing the "Mejorar" button needs to know.
-export function upgradeCostFor(weaponLevel) {
-  return isWeaponMaxed(weaponLevel) ? POST_MAX_UPGRADE_COST : nextUpgradeCost(weaponLevel)
+export function upgradeCostFor(weaponLevel, bonusLevel = 0) {
+  return isWeaponMaxed(weaponLevel) ? postMaxUpgradeCost(bonusLevel) : nextUpgradeCost(weaponLevel)
 }
 
 // Every weapon upgrade also toughens the player up — more life to survive stronger jefes.

@@ -24,8 +24,10 @@ function formatHost(url) {
 }
 
 // The blob-shaped card background — same path/viewBox as the uiverse.io weather-card
-// reference the design is based on, just recolored per-jefe and stretched (via the
-// card's own aspect-ratio + preserveAspectRatio="none") to fit any card size.
+// reference the design is based on, recolored per-jefe and stretched (via the parent's
+// own width/height + preserveAspectRatio="none") into a long horizontal banner.
+// Lives in its own overflow-hidden wrapper — nothing else on the card is clipped by it,
+// so the avatar/skin badge below can safely spill past the card's edge.
 function CardBlob({ id, colorA, colorB }) {
   return (
     <svg className="absolute inset-0 size-full" viewBox="0 0 342 175" preserveAspectRatio="none" aria-hidden="true">
@@ -51,54 +53,56 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
   return (
     <div
       className={
-        'boss-card group relative w-full overflow-hidden rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl' +
+        'boss-card group relative w-full rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl' +
         (jefe.es_top1 ? ' ring-2 ring-utility-yellow-400' : '')
       }
-      style={{ aspectRatio: '342 / 196' }}
     >
-      <CardBlob id={`boss-blob-${jefe.id}`} colorA={jefe.color_hex} colorB={colorB} />
-      {/* Scrim so white text stays legible no matter how light the sponsor's color is. */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/25" aria-hidden="true" />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{ background: 'radial-gradient(120% 100% at 100% 0%, rgba(255,255,255,0.16), transparent 60%)' }}
-      />
-
-      <div className="absolute top-3 left-3 z-10">
-        <RankBadge rank={rank} />
+      {/* Clipped background layer only — the blob art, scrim, and hover glow live here so
+          rounding the corners never crops anything that needs to spill past the edge. */}
+      <div className="absolute inset-0 overflow-hidden rounded-2xl">
+        <CardBlob id={`boss-blob-${jefe.id}`} colorA={jefe.color_hex} colorB={colorB} />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/10 to-black/35" aria-hidden="true" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{ background: 'radial-gradient(120% 140% at 100% 0%, rgba(255,255,255,0.16), transparent 60%)' }}
+        />
+        <div className="absolute right-0 bottom-0 left-0 h-1 bg-black/30">
+          <div className="rank-bar-fill h-full" style={{ width: `${hpPct}%`, background: jefe.color_hex }} />
+        </div>
       </div>
 
       {jefe.es_top1 && (
-        <Badge className="absolute top-3 left-14 z-10" color="warning" size="sm">
+        <Badge className="absolute top-3 left-3 z-10" color="warning" size="sm">
           <span className="animate-pulse">★</span>&nbsp;TOP 1
         </Badge>
       )}
 
-      <div className="absolute -top-3 right-3 z-10 drop-shadow-lg">
-        <div
-          className="rounded-[10px] p-0.5"
-          style={{ background: `linear-gradient(135deg, ${jefe.color_hex}, ${colorB})` }}
-        >
-          <Avatar
-            src={jefe.logo_url}
-            alt={jefe.nombre_marca}
-            size="xl"
-            rounded={false}
-            badge={
-              <div className="absolute -right-1.5 -bottom-1.5">
-                <BossSkinPreview jefe={jefe} size={26} />
-              </div>
-            }
-          />
+      <div className="relative z-10 flex h-full flex-wrap items-center gap-4 p-4 text-white sm:flex-nowrap sm:p-5">
+        <div className="flex shrink-0 items-center gap-2">
+          <RankBadge rank={rank} />
+          <div
+            className="rounded-[10px] p-0.5"
+            style={{ background: `linear-gradient(135deg, ${jefe.color_hex}, ${colorB})` }}
+          >
+            <Avatar
+              src={jefe.logo_url}
+              alt={jefe.nombre_marca}
+              size="xl"
+              rounded={false}
+              badge={
+                <div className="absolute -right-1.5 -bottom-1.5">
+                  <BossSkinPreview jefe={jefe} size={26} />
+                </div>
+              }
+            />
+          </div>
         </div>
-      </div>
 
-      <div className="relative z-10 flex h-full flex-col justify-between p-4 pt-14 text-white">
-        <div className="min-w-0">
-          <p className="text-4xl leading-none font-black tracking-tight">
+        <div className="flex shrink-0 flex-col">
+          <p className="text-3xl leading-none font-black tracking-tight sm:text-4xl">
             {Math.round(jefe.hp_max).toLocaleString('es-MX')}
-            <span className="ml-1 text-base font-semibold text-white/70">HP</span>
+            <span className="ml-1 text-sm font-semibold text-white/70">HP</span>
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
@@ -115,32 +119,27 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
           </div>
         </div>
 
-        <div className="flex items-end justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
-            <p className="truncate text-md font-bold">{jefe.nombre_marca}</p>
-            {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
-            {jefe.link_url && (
-              <a
-                href={jefe.link_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-white/80 underline decoration-white/40 underline-offset-2 hover:text-white hover:decoration-white"
-              >
-                <LinkExternal01 className="size-3 shrink-0" />
-                <span className="truncate">{formatHost(jefe.link_url)}</span>
-              </a>
-            )}
-          </div>
-          <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
-            Retar
-          </Button>
+        <div className="min-w-0 flex-1 basis-40">
+          <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
+          <p className="truncate text-md font-bold sm:text-lg">{jefe.nombre_marca}</p>
+          {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
+          {jefe.link_url && (
+            <a
+              href={jefe.link_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-white/80 underline decoration-white/40 underline-offset-2 hover:text-white hover:decoration-white"
+            >
+              <LinkExternal01 className="size-3 shrink-0" />
+              <span className="truncate">{formatHost(jefe.link_url)}</span>
+            </a>
+          )}
         </div>
-      </div>
 
-      <div className="absolute right-0 bottom-0 left-0 z-10 h-1 bg-black/30">
-        <div className="rank-bar-fill h-full" style={{ width: `${hpPct}%`, background: jefe.color_hex }} />
+        <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
+          Retar
+        </Button>
       </div>
     </div>
   )

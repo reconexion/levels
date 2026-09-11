@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { sileo, Toaster } from 'sileo'
 import 'sileo/styles.css'
 import { atacar as apiAtacar, iniciarCombate } from '../api'
 import { bossStyleForSkinId } from './bossSkins'
-import { getBonusDamage, getPlayerMaxHp } from './progression'
+import { getBonusDamage, getPlayerMaxHp, isWeaponMaxed } from './progression'
+import { PLAYER_COLORS, PLAYER_SKINS } from './playerCosmetics'
+import { useLocalStorage } from '../utils/useLocalStorage'
 import './PlatformerGame.css'
 import gunNormalSrc from '../assets/predeterminado.png'
 import gunRedSrc from '../assets/red.png'
 import gunSharkSrc from '../assets/shark.png'
+import gunDangerSrc from '../assets/Danger.png'
 
 const WORLD_W = 960
 const WORLD_H = 540
@@ -149,21 +152,6 @@ const platforms = [
   { x: WORLD_W / 2 - 85, y: 250, w: 170, h: 22 },
 ]
 
-const PLAYER_COLORS = [
-  { id: 'blanco', name: 'Blanco', hex: '#ffffff' },
-  { id: 'naranja', name: 'Naranja', hex: '#ff8a4d' },
-  { id: 'azul', name: 'Azul', hex: '#4d9bff' },
-  { id: 'verde', name: 'Verde', hex: '#4ddc8a' },
-  { id: 'rojo', name: 'Rojo', hex: '#ff5d5d' },
-  { id: 'morado', name: 'Morado', hex: '#b070ff' },
-  { id: 'plata', name: 'Plata', hex: '#c7d0dc' },
-  { id: 'amarillo', name: 'Amarillo', hex: '#ffd23f' },
-]
-
-const PLAYER_SKINS = [
-  { id: 'fantasma', name: 'Fantasma' },
-  { id: 'calabaza', name: 'Calabaza de Halloween' },
-]
 
 // 3 weapon tiers, each a different sprite with its own damage/fire-rate trade-off.
 // gripFracX/Y and muzzleFracX/Y are fractions of the source image's width/height, measured
@@ -206,6 +194,18 @@ const GUN_LEVELS = [
     muzzleFracX: 75 / 1536,
     muzzleFracY: 252 / 1024,
     drawW: 84,
+  },
+  {
+    id: 'danger',
+    name: '4. Danger',
+    src: gunDangerSrc,
+    damage: 30,
+    fireRate: 0.055,
+    gripFracX: 0.665,
+    gripFracY: 0.62,
+    muzzleFracX: 10 / 1774,
+    muzzleFracY: 265 / 887,
+    drawW: 96,
   },
 ].map((lvl) => ({ ...lvl, barrelLen: (lvl.gripFracX - lvl.muzzleFracX) * lvl.drawW }))
 
@@ -320,26 +320,45 @@ function aabbOverlap(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
 }
 
-export default function PlatformerGame({ jefe, weaponLevel, bonusLevel = 0, sesionId, onVictory, onExit }) {
+export default function PlatformerGame({
+  jefe,
+  weaponLevel,
+  bonusLevel = 0,
+  weaponSkinIndex = 0,
+  onWeaponSkinChange,
+  sesionId,
+  onVictory,
+  onExit,
+}) {
   const canvasRef = useRef(null)
-  const colorRef = useRef(0)
-  const faceRef = useRef(0)
-  const skinRef = useRef(0)
   const bossImageRef = useRef(null)
-  const crosshairStyleRef = useRef(0)
-  const crosshairColorRef = useRef('#ffffff')
-  const bgStyleRef = useRef(0)
-  const bgColorARef = useRef(BACKGROUNDS[0].colorA)
-  const bgColorBRef = useRef(BACKGROUNDS[0].colorB)
   const gameControlsRef = useRef(null)
-  const [colorIndex, setColorIndex] = useState(0)
-  const [faceIndex, setFaceIndex] = useState(0)
-  const [skinIndex, setSkinIndex] = useState(0)
-  const [crosshairStyleIndex, setCrosshairStyleIndex] = useState(0)
-  const [crosshairColor, setCrosshairColor] = useState('#ffffff')
-  const [bgStyleIndex, setBgStyleIndex] = useState(0)
-  const [bgColorA, setBgColorA] = useState(BACKGROUNDS[0].colorA)
-  const [bgColorB, setBgColorB] = useState(BACKGROUNDS[0].colorB)
+
+  // Persisted so your look survives closing the tab — same character every fight
+  // until you change it, not reset back to the ghost each time.
+  const [colorIndex, setColorIndex] = useLocalStorage('10levels:player:colorIndex', 0)
+  const [faceIndex, setFaceIndex] = useLocalStorage('10levels:player:faceIndex', 0)
+  const [skinIndex, setSkinIndex] = useLocalStorage('10levels:player:skinIndex', 0)
+  const [crosshairStyleIndex, setCrosshairStyleIndex] = useLocalStorage('10levels:player:crosshairStyleIndex', 0)
+  const [crosshairColor, setCrosshairColor] = useLocalStorage('10levels:player:crosshairColor', '#ffffff')
+  const [bgStyleIndex, setBgStyleIndex] = useLocalStorage('10levels:player:bgStyleIndex', 0)
+  const [bgColorA, setBgColorA] = useLocalStorage('10levels:player:bgColorA', BACKGROUNDS[0].colorA)
+  const [bgColorB, setBgColorB] = useLocalStorage('10levels:player:bgColorB', BACKGROUNDS[0].colorB)
+
+  // The game loop reads from refs (not React state) to avoid re-running the whole
+  // effect on every customization change — seeded once from the persisted values above.
+  const colorRef = useRef(colorIndex)
+  const faceRef = useRef(faceIndex)
+  const skinRef = useRef(skinIndex)
+  const crosshairStyleRef = useRef(crosshairStyleIndex)
+  const crosshairColorRef = useRef(crosshairColor)
+  const bgStyleRef = useRef(bgStyleIndex)
+  const bgColorARef = useRef(bgColorA)
+  const bgColorBRef = useRef(bgColorB)
+  const weaponSkinRef = useRef(weaponSkinIndex)
+  useEffect(() => {
+    weaponSkinRef.current = weaponSkinIndex
+  }, [weaponSkinIndex])
 
   const onColorChange = (idx) => {
     colorRef.current = idx
@@ -594,17 +613,27 @@ export default function PlatformerGame({ jefe, weaponLevel, bonusLevel = 0, sesi
       flashes.push({ x, y, life: 0.06, maxLife: 0.06 })
     }
 
+    // Once the weapon is fully maxed, points buy a cosmetic-only reskin (see the
+    // "Skin de arma" picker below the fight) — damage/fireRate/cooldown always stay
+    // tied to the real weaponLevel, only what gets *drawn* changes.
+    function getDisplayGunLevel(statsLevel) {
+      if (!isWeaponMaxed(weaponLevel)) return statsLevel
+      return GUN_LEVELS[weaponSkinRef.current] || statsLevel
+    }
+
     function shoot() {
       const level = GUN_LEVELS[weaponLevel] || GUN_LEVELS[0]
+      const visual = getDisplayGunLevel(level)
       const angle = player.gunAngle
-      const muzzleX = player.gunPivotX + Math.cos(angle) * level.barrelLen
-      const muzzleY = player.gunPivotY + Math.sin(angle) * level.barrelLen
+      const muzzleX = player.gunPivotX + Math.cos(angle) * visual.barrelLen
+      const muzzleY = player.gunPivotY + Math.sin(angle) * visual.barrelLen
       bullets.push({
         x: muzzleX,
         y: muzzleY,
         vx: Math.cos(angle) * BULLET_SPEED,
         vy: Math.sin(angle) * BULLET_SPEED,
         life: BULLET_LIFE,
+        // Damage always comes from the real weapon tier, never the cosmetic skin.
         damage: level.damage + getBonusDamage(bonusLevel),
       })
       spawnMuzzleFlash(muzzleX, muzzleY)
@@ -1651,8 +1680,10 @@ export default function PlatformerGame({ jefe, weaponLevel, bonusLevel = 0, sesi
     }
 
     function drawGun() {
-      const level = GUN_LEVELS[weaponLevel] || GUN_LEVELS[0]
-      const img = GUN_IMAGES[weaponLevel] || GUN_IMAGES[0]
+      const statsLevel = GUN_LEVELS[weaponLevel] || GUN_LEVELS[0]
+      const level = getDisplayGunLevel(statsLevel)
+      const levelIndex = GUN_LEVELS.indexOf(level)
+      const img = GUN_IMAGES[levelIndex] || GUN_IMAGES[0]
       if (!img.complete || img.naturalWidth === 0) return
 
       ctx.save()
@@ -1677,7 +1708,8 @@ export default function PlatformerGame({ jefe, weaponLevel, bonusLevel = 0, sesi
 
     function drawWeaponLaserSight() {
       if (player.dead) return
-      const level = GUN_LEVELS[weaponLevel] || GUN_LEVELS[0]
+      const statsLevel = GUN_LEVELS[weaponLevel] || GUN_LEVELS[0]
+      const level = getDisplayGunLevel(statsLevel)
       const angle = player.gunAngle
       const originX = player.gunPivotX + Math.cos(angle) * level.barrelLen
       const originY = player.gunPivotY + Math.sin(angle) * level.barrelLen
@@ -2740,6 +2772,26 @@ export default function PlatformerGame({ jefe, weaponLevel, bonusLevel = 0, sesi
             {GUN_LEVELS[weaponLevel].fireRate.toFixed(2)}s
           </span>
         </div>
+        {isWeaponMaxed(weaponLevel) && onWeaponSkinChange && (
+          <div className="platformer-customize">
+            <label htmlFor="weapon-skin-select">Skin de arma</label>
+            <select
+              id="weapon-skin-select"
+              value={weaponSkinIndex}
+              onChange={(e) => {
+                const idx = Number(e.target.value)
+                onWeaponSkinChange(idx)
+                sileo.info({ title: 'Skin de arma', description: GUN_LEVELS[idx].name })
+              }}
+            >
+              {GUN_LEVELS.map((lvl, i) => (
+                <option key={lvl.id} value={i}>
+                  {lvl.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="platformer-customize">
           <label htmlFor="bg-style-select">Fondo</label>
           <select id="bg-style-select" value={bgStyleIndex} onChange={onBgStyleChange}>

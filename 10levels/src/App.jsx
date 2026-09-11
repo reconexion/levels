@@ -29,6 +29,8 @@ function App() {
   // Extra damage/HP boosts bought after the weapon is maxed — uncapped, only limited
   // by how many points you have.
   const [bonusLevel, setBonusLevel] = useLocalStorage('10levels:bonusLevel', 0)
+  // Purely cosmetic gun skin, pickable once the weapon is maxed — never changes damage/fireRate.
+  const [weaponSkinIndex, setWeaponSkinIndex] = useLocalStorage('10levels:weaponSkinIndex', 0)
   const [jefesVencidosTotal, setJefesVencidosTotal] = useLocalStorage('10levels:jefesVencidosTotal', 0)
 
   function loadJefes() {
@@ -66,7 +68,7 @@ function App() {
   }
 
   const handleUpgradeWeapon = () => {
-    const cost = upgradeCostFor(weaponLevel)
+    const cost = upgradeCostFor(weaponLevel, bonusLevel)
     if (points < cost) return
     setPoints((p) => p - cost)
     if (isWeaponMaxed(weaponLevel)) {
@@ -84,6 +86,8 @@ function App() {
         jefe={selectedJefe}
         weaponLevel={weaponLevel}
         bonusLevel={bonusLevel}
+        weaponSkinIndex={weaponSkinIndex}
+        onWeaponSkinChange={setWeaponSkinIndex}
         sesionId={sesionId}
         onVictory={handleVictory}
         onExit={handleExitFight}
@@ -112,6 +116,7 @@ function App() {
         points={points}
         weaponLevel={weaponLevel}
         bonusLevel={bonusLevel}
+        weaponSkinIndex={weaponSkinIndex}
         onUpgradeWeapon={handleUpgradeWeapon}
         jefesVencidosTotal={jefesVencidosTotal}
         stats={stats}

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button } from './base/buttons/button'
 import BossCard from './BossCard'
 import Pagination from './Pagination'
+import PlayerPreview from './PlayerPreview'
 import { WEAPON_LEVELS, getPlayerMaxHp, isWeaponMaxed, upgradeCostFor } from '../game/progression'
 
 const JEFES_POR_PAGINA = 8
@@ -17,9 +18,9 @@ function formatMonto(monto) {
 
 function JefesSkeleton() {
   return (
-    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="skeleton-shimmer w-full rounded-2xl" style={{ aspectRatio: '342 / 196' }} />
+    <div className="flex w-full flex-col gap-4">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="skeleton-shimmer h-44 w-full rounded-2xl" />
       ))}
     </div>
   )
@@ -35,6 +36,7 @@ export default function BossMenu({
   points,
   weaponLevel,
   bonusLevel,
+  weaponSkinIndex,
   onUpgradeWeapon,
   jefesVencidosTotal,
   stats,
@@ -42,7 +44,7 @@ export default function BossMenu({
   const [page, setPage] = useState(1)
 
   const maxed = isWeaponMaxed(weaponLevel)
-  const upgradeCost = upgradeCostFor(weaponLevel)
+  const upgradeCost = upgradeCostFor(weaponLevel, bonusLevel)
   const canUpgrade = points >= upgradeCost
   const currentMaxHp = getPlayerMaxHp(weaponLevel, bonusLevel)
   const nextMaxHp = maxed ? getPlayerMaxHp(weaponLevel, bonusLevel + 1) : getPlayerMaxHp(weaponLevel + 1, bonusLevel)
@@ -97,6 +99,7 @@ export default function BossMenu({
         </section>
 
         <section className="glass-card animate-in fade-in slide-in-from-bottom-2 flex w-full flex-wrap items-center gap-6 rounded-xl border border-secondary p-5 shadow-lg shadow-black/30 duration-500">
+          <PlayerPreview weaponLevel={weaponLevel} weaponSkinIndex={weaponSkinIndex} />
           <div className="flex flex-col gap-0.5">
             <span className="text-xs tracking-wide text-quaternary uppercase">Puntos</span>
             <strong className="text-lg text-primary">{points}</strong>
@@ -146,7 +149,7 @@ export default function BossMenu({
 
           {!loading && !error && (
             <>
-              <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="flex w-full flex-col gap-4">
                 {pageJefes.map((jefe, i) => (
                   <div key={jefe.id} className="ranked-row" style={{ animationDelay: `${i * 70}ms` }}>
                     <BossCard
@@ -157,9 +160,7 @@ export default function BossMenu({
                     />
                   </div>
                 ))}
-                {jefes.length === 0 && (
-                  <p className="col-span-full py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>
-                )}
+                {jefes.length === 0 && <p className="py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>}
               </div>
 
               <Pagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
