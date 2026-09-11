@@ -1,9 +1,10 @@
-import { ArrowRight, Coins01, Flash, Heart, LinkExternal01, Zap } from '@untitledui/icons'
+import { ArrowRight, Coins01, Flash, Heart, LinkExternal01, Lock01, Zap } from '@untitledui/icons'
 import { Avatar } from './base/avatar/avatar'
 import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
 import BossSkinPreview from './BossSkinPreview'
 import RankBadge from './RankBadge'
+import { formatLockRemaining, useLockRemaining } from '../game/bossLock'
 import { shadeColorHex } from '../game/bossSkins'
 import { bossTierNameForMonto, TIER_BADGE_COLOR } from '../game/bossTier'
 import { categoriaEstiloFor, CATEGORIA_LABEL_KEY } from '../game/categorias'
@@ -43,12 +44,14 @@ function CardBlob({ id, colorA, colorB }) {
   )
 }
 
-export default function BossCard({ jefe, rank, rewardPoints, maxHpVisible, onSelect }) {
+export default function BossCard({ jefe, rank, rewardPoints, maxHpVisible, onSelect, defeatedAt }) {
   const { t, lang } = useLanguage()
   const tierName = bossTierNameForMonto(jefe.monto_pagado)
   const colorB = shadeColorHex(jefe.color_hex, -42)
   const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
   const { icon: CategoriaIcon, tint: categoriaTint } = categoriaEstiloFor(jefe.categoria)
+  const lockRemaining = useLockRemaining(defeatedAt)
+  const isLocked = lockRemaining > 0
 
   const nombreContent = (
     <>
@@ -58,7 +61,11 @@ export default function BossCard({ jefe, rank, rewardPoints, maxHpVisible, onSel
   )
 
   return (
-    <div className="boss-card group relative w-full rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl">
+    <div
+      className={`boss-card group relative w-full rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 ${
+        isLocked ? 'grayscale' : 'hover:-translate-y-1 hover:shadow-2xl'
+      }`}
+    >
       {/* Clipped background layer only — the blob art, scrim, hover glow, and category
           watermark live here so rounding the corners never crops anything that needs to
           spill past the edge (the avatar/skin badge below does). */}
@@ -78,6 +85,14 @@ export default function BossCard({ jefe, rank, rewardPoints, maxHpVisible, onSel
         <div className="absolute right-0 bottom-0 left-0 h-1 bg-black/30">
           <div className="rank-bar-fill h-full" style={{ width: `${hpPct}%`, background: jefe.color_hex }} />
         </div>
+        {isLocked && (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center bg-black/55 backdrop-blur-[1px]"
+          >
+            <Lock01 className="size-9 text-white/80" />
+          </div>
+        )}
       </div>
 
       <div className="relative z-10 flex h-full flex-wrap items-center gap-4 p-4 text-white sm:flex-nowrap sm:p-5">
@@ -161,10 +176,25 @@ export default function BossCard({ jefe, rank, rewardPoints, maxHpVisible, onSel
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)}>
-            {t('Challenge')}
-          </Button>
-          {rewardPoints > 0 && (
+          {isLocked ? (
+            <Button
+              size="sm"
+              color="secondary"
+              iconLeading={Lock01}
+              isDisabled
+              title={t('{name} was just defeated. Try again in {time}.', {
+                name: jefe.nombre_marca,
+                time: formatLockRemaining(lockRemaining),
+              })}
+            >
+              {formatLockRemaining(lockRemaining)}
+            </Button>
+          ) : (
+            <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)}>
+              {t('Challenge')}
+            </Button>
+          )}
+          {!isLocked && rewardPoints > 0 && (
             <span
               className="inline-flex items-center gap-1 text-xs font-semibold text-utility-yellow-300"
               title={t('Points earned for defeating this boss')}

@@ -1,3 +1,4 @@
+import { Lock01 } from '@untitledui/icons'
 import { useEffect, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { fetchJefes, fetchStats } from './api'
@@ -6,6 +7,7 @@ import Patrocinar from './components/Patrocinar'
 import RainBackground from './components/RainBackground'
 import LanguageToggle from './components/LanguageToggle'
 import { Button } from './components/base/buttons/button'
+import { formatLockRemaining, useLockRemaining } from './game/bossLock'
 import PlatformerGame from './game/PlatformerGame'
 import { MAX_WEAPON_LEVEL, isWeaponMaxed, pointsForRank, upgradeCostFor } from './game/progression'
 import { useLanguage } from './i18n/LanguageContext'
@@ -52,16 +54,51 @@ function NotFoundScreen({ message }) {
   )
 }
 
-function FightRoute({ jefes, jefesLoading, sesionId, weaponLevel, bonusLevel, weaponSkinIndex, onWeaponSkinChange, onVictoryPoints }) {
+// Shown instead of the fight when the boss was defeated too recently — matches
+// BossCard's lock treatment so a direct/refreshed link to a cooling-down boss
+// can't be used to skip its wait.
+function LockedBossScreen({ jefe, remaining, onBack }) {
+  const { t } = useLanguage()
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-4 px-4 text-center text-primary">
+      <Lock01 className="size-10 text-tertiary" />
+      <p className="text-tertiary">
+        {t('{name} was just defeated. Try again in {time}.', {
+          name: jefe.nombre_marca,
+          time: formatLockRemaining(remaining),
+        })}
+      </p>
+      <Button color="primary" onClick={onBack}>
+        {t('Back to menu')}
+      </Button>
+    </div>
+  )
+}
+
+function FightRoute({
+  jefes,
+  jefesLoading,
+  sesionId,
+  weaponLevel,
+  bonusLevel,
+  weaponSkinIndex,
+  onWeaponSkinChange,
+  onVictoryPoints,
+  jefesDerrotadosAt,
+}) {
   const { t } = useLanguage()
   const { jefeId } = useParams()
   const navigate = useNavigate()
   const jefe = jefes.find((j) => String(j.id) === jefeId)
+  // Called unconditionally (before the early returns below) so hook order stays
+  // stable across renders regardless of whether `jefe` was found yet.
+  const lockRemaining = useLockRemaining(jefe ? jefesDerrotadosAt[jefe.id] : null)
 
   // Jefes can still be loading on a direct link/refresh (no menu visit first) —
   // wait rather than declaring it missing before the list has even arrived.
   if (jefesLoading) return null
   if (!jefe) return <NotFoundScreen message={t('This boss doesn’t exist or is no longer active.')} />
+  if (lockRemaining > 0) return <LockedBossScreen jefe={jefe} remaining={lockRemaining} onBack={() => navigate('/')} />
 
   return (
     <PlatformerGame
@@ -111,6 +148,9 @@ function App() {
   // Purely cosmetic gun skin, pickable once the weapon is maxed — never changes damage/fireRate.
   const [weaponSkinIndex, setWeaponSkinIndex] = useLocalStorage('10levels:weaponSkinIndex', 0)
   const [jefesVencidosTotal, setJefesVencidosTotal] = useLocalStorage('10levels:jefesVencidosTotal', 0)
+  // Timestamp (ms) of each boss's most recent defeat, keyed by jefe id — drives the
+  // post-victory lock so the same boss can't be re-challenged immediately.
+  const [jefesDerrotadosAt, setJefesDerrotadosAt] = useLocalStorage('10levels:jefesDerrotadosAt', {})
 
   function loadJefes() {
     setJefesLoading(true)
@@ -137,6 +177,7 @@ function App() {
     const rank = jefes.findIndex((j) => j.id === jefe.id) + 1
     setPoints((p) => p + pointsForRank(rank))
     setJefesVencidosTotal((n) => n + 1)
+    setJefesDerrotadosAt((prev) => ({ ...prev, [jefe.id]: Date.now() }))
   }
 
   const handleUpgradeWeapon = () => {
@@ -174,6 +215,7 @@ function App() {
               weaponSkinIndex={weaponSkinIndex}
               onUpgradeWeapon={handleUpgradeWeapon}
               jefesVencidosTotal={jefesVencidosTotal}
+              jefesDerrotadosAt={jefesDerrotadosAt}
               stats={stats}
             />
           }
@@ -190,6 +232,7 @@ function App() {
               weaponSkinIndex={weaponSkinIndex}
               onWeaponSkinChange={setWeaponSkinIndex}
               onVictoryPoints={handleVictoryPoints}
+              jefesDerrotadosAt={jefesDerrotadosAt}
             />
           }
         />

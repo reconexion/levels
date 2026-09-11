@@ -67,3 +67,10 @@ export function crearCheckout({ nombreMarca, logoUrl, colorHex, skinId, categori
     }),
   })
 }
+
+// Asks the backend to check the Checkout Session with Stripe directly and
+// activate the jefe if it's paid — a fallback for when the
+// checkout.session.completed webhook hasn't (yet, or ever) arrived.
+export function confirmarPago(jefeId) {
+  return request(`/api/pagos/confirmar/${jefeId}`, { method: 'POST' })
+}

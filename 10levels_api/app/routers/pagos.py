@@ -6,7 +6,8 @@ from app.balance import calcular_stats
 from app.config import settings
 from app.database import get_db
 from app.models import Jefe
-from app.schemas import CrearCheckoutRequest, CrearCheckoutResponse
+from app.schemas import CrearCheckoutRequest, CrearCheckoutResponse, JefeOut
+from app.top1 import activar_desde_sesion_pagada
 
 router = APIRouter(prefix="/api/pagos", tags=["pagos"])
 
@@ -68,4 +69,35 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
         cancel_url=f"{settings.frontend_url}/patrocinar?patrocinio=cancelado",
     )
 
+    # Recorded so confirmar_pago() below can ask Stripe directly whether this
+    # session was paid, instead of depending solely on the webhook arriving.
+    jefe.stripe_checkout_session_id = session.id
+    db.commit()
+
     return CrearCheckoutResponse(checkout_url=session.url, jefe_id=jefe.id)
+
+
+@router.post("/confirmar/{jefe_id}", response_model=JefeOut)
+def confirmar_pago(jefe_id: int, db: Session = Depends(get_db)):
+    """Fallback activation path for when the checkout.session.completed webhook
+    never arrives — e.g. local dev without `stripe listen` running, or a missed
+    delivery in any environment. The frontend calls this while polling right
+    after Stripe Checkout redirects back, so a real payment always gets
+    reflected here even if the webhook is late, lost, or was never wired up.
+    """
+    jefe = db.get(Jefe, jefe_id)
+    if jefe is None:
+        raise HTTPException(status_code=404, detail="Jefe no encontrado")
+
+    if not jefe.activo and jefe.stripe_checkout_session_id and settings.stripe_secret_key:
+        stripe.api_key = settings.stripe_secret_key
+        try:
+            session = stripe.checkout.Session.retrieve(jefe.stripe_checkout_session_id)
+        except stripe.error.StripeError:
+            session = None
+        if session is not None and session.get("payment_status") == "paid":
+            activar_desde_sesion_pagada(db, jefe, session)
+
+    if not jefe.activo:
+        raise HTTPException(status_code=404, detail="El pago todavía no se ha confirmado")
+    return jefe

@@ -29,4 +29,9 @@ class Jefe(Base):
     es_top1: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     activo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     stripe_payment_intent_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # Set right after the Checkout Session is created (crear_checkout) so a jefe can be
+    # activated by asking Stripe directly — see routers/pagos.py confirmar_pago — instead
+    # of only ever activating via the checkout.session.completed webhook, which never
+    # arrives in a local/dev environment unless `stripe listen` is also running.
+    stripe_checkout_session_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     creado_en: Mapped[object] = mapped_column(DateTime, server_default=func.now())

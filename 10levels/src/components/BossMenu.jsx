@@ -47,6 +47,7 @@ export default function BossMenu({
   weaponSkinIndex,
   onUpgradeWeapon,
   jefesVencidosTotal,
+  jefesDerrotadosAt,
   stats,
 }) {
   const { t, lang } = useLanguage()
@@ -213,6 +214,7 @@ export default function BossMenu({
                         rewardPoints={pointsForRank(globalRank)}
                         maxHpVisible={maxHpVisible}
                         onSelect={onSelectJefe}
+                        defeatedAt={jefesDerrotadosAt?.[jefe.id]}
                       />
                     </div>
                   )

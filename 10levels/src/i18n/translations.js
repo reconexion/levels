@@ -38,6 +38,7 @@ export const translations = {
     'Visit {name}’s page': 'Visitar la página de {name}',
     '+{points} pts': '+{points} pts',
     'Points earned for defeating this boss': 'Puntos que ganas al vencer a este jefe',
+    '{name} was just defeated. Try again in {time}.': '{name} acaba de ser vencido. Vuelve a intentarlo en {time}.',
 
     // Boss tiers (derived from monto_pagado, never stored — see game/bossTier.js)
     Noob: 'Noob',
@@ -105,10 +106,10 @@ export const translations = {
       '{name} quedó activo con {amount} pagados. Ya aparece en la lista de jefes{top1}.',
     ', in the #1 spot': ', en el puesto #1',
     'Confirming your payment…': 'Confirmando tu pago…',
-    'Stripe already received the payment; your boss activates itself once the confirmation (webhook) arrives.':
-      'Stripe ya recibió el pago; en cuanto llegue la confirmación (webhook) tu jefe se activa solo.',
-    'This is taking longer than usual. If you’re developing locally, check that {command} is running.':
-      'Esto está tardando más de lo normal. Si estás en desarrollo local, revisa que {command} esté corriendo.',
+    'Stripe already received the payment; we’re confirming it now and your boss will activate itself in a moment.':
+      'Stripe ya recibió el pago; lo estamos confirmando y tu jefe se activará solo en un momento.',
+    'This is taking longer than usual. Reloading this page will retry the confirmation.':
+      'Esto está tardando más de lo normal. Recargar esta página vuelve a intentar la confirmación.',
     'Back to menu': 'Volver al menú',
 
     // Player preview / game chrome
