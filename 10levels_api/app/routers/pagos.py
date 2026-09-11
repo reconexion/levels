@@ -1,6 +1,5 @@
 import stripe
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.balance import calcular_stats
@@ -17,14 +16,10 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
     if not settings.stripe_secret_key:
         raise HTTPException(status_code=503, detail="Stripe no está configurado todavía")
 
-    actual_top1 = db.scalar(select(Jefe).where(Jefe.es_top1.is_(True)))
-    precio_minimo = float(actual_top1.monto_pagado) if actual_top1 is not None else 0.0
-    if payload.monto_deseado <= precio_minimo:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Tu monto debe superar ${precio_minimo:,.0f} para convertirte en el jefe #1",
-        )
-
+    # Anyone can sponsor a jefe with whatever amount they choose (Pydantic already
+    # enforces > 0) — there's no minimum to "just join" the boss list. Becoming #1
+    # is purely a side effect of paying more than everyone else, decided later by
+    # activar_jefe() once the webhook confirms payment; nothing is gatekept here.
     stripe.api_key = settings.stripe_secret_key
 
     # monto_pagado/hp_max/etc. are placeholders here — they only become real once the
@@ -56,7 +51,7 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
                     "currency": "mxn",
                     "unit_amount": round(payload.monto_deseado * 100),
                     "product_data": {
-                        "name": f"10 Levels — sé el jefe #1: {payload.nombre_marca}",
+                        "name": f"10 Levels — jefe patrocinado: {payload.nombre_marca}",
                     },
                 },
                 "quantity": 1,

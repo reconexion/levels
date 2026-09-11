@@ -74,16 +74,18 @@ export default function Patrocinar({ stats, onBack }) {
   const precioMinimo = stats?.jefe_top1_actual?.monto_pagado ?? 0
   const stripeListo = stats?.stripe_configurado ?? false
 
+  const monto = Number(montoDeseado)
+  const seraTop1 = monto > precioMinimo
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
-    const monto = Number(montoDeseado)
     if (!nombreMarca.trim() || !logoUrl.trim()) {
       setError('Rellena el nombre de tu marca y la URL de tu logo.')
       return
     }
-    if (!monto || monto <= precioMinimo) {
-      setError(`Tu monto debe superar ${formatMonto(precioMinimo)} para ser el jefe #1.`)
+    if (!monto || monto <= 0) {
+      setError('Ingresa un monto válido.')
       return
     }
     setEnviando(true)
@@ -118,10 +120,13 @@ export default function Patrocinar({ stats, onBack }) {
           {jefeConfirmado ? (
             <>
               <CheckCircle className="size-12 text-fg-success-primary" />
-              <h1 className="text-display-xs font-semibold text-brand-secondary">¡Ya eres el jefe #1!</h1>
+              <h1 className="text-display-xs font-semibold text-brand-secondary">
+                {jefeConfirmado.es_top1 ? '¡Ya eres el jefe #1!' : '¡Tu jefe ya está activo!'}
+              </h1>
               <p className="text-tertiary">
                 <strong style={{ color: jefeConfirmado.color_hex }}>{jefeConfirmado.nombre_marca}</strong> quedó
-                activo con {formatMonto(jefeConfirmado.monto_pagado)} pagados. Ya aparece en la lista de jefes.
+                activo con {formatMonto(jefeConfirmado.monto_pagado)} pagados. Ya aparece en la lista de jefes
+                {jefeConfirmado.es_top1 ? ', en el puesto #1.' : '.'}
               </p>
             </>
           ) : (
@@ -155,17 +160,19 @@ export default function Patrocinar({ stats, onBack }) {
         </Button>
 
         <header className="animate-in fade-in slide-in-from-top-4 flex flex-col gap-2 duration-500">
-          <h1 className="text-display-xs font-semibold text-brand-secondary">Conviértete en el jefe #1</h1>
+          <h1 className="text-display-xs font-semibold text-brand-secondary">Patrocina tu propio jefe</h1>
           <p className="text-tertiary">
+            Paga lo que quieras para unirte a la lista de jefes.{' '}
             {stats?.jefe_top1_actual ? (
               <>
                 <strong style={{ color: stats.jefe_top1_actual.color_hex }}>
                   {stats.jefe_top1_actual.nombre_marca}
                 </strong>{' '}
-                pagó <strong>{formatMonto(precioMinimo)}</strong> por el puesto #1. Paga más para quitárselo.
+                pagó <strong>{formatMonto(precioMinimo)}</strong> y hoy es el jefe #1 — el que más paga siempre toma
+                ese puesto.
               </>
             ) : (
-              'Todavía nadie ha pagado por ser el jefe #1 — sé el primero.'
+              'Todavía nadie ha patrocinado un jefe: el primero en pagar será el #1.'
             )}
           </p>
         </header>
@@ -250,22 +257,32 @@ export default function Patrocinar({ stats, onBack }) {
             value={mensaje}
             onChange={setMensaje}
           />
-          <Input
-            label={`Monto a pagar (supera ${formatMonto(precioMinimo)})`}
-            type="number"
-            icon={CurrencyDollarCircle}
-            min={precioMinimo + 1}
-            step="1"
-            placeholder={String(Math.max(50, precioMinimo + 1))}
-            value={montoDeseado}
-            onChange={setMontoDeseado}
-            isRequired
-          />
+          <div className="flex flex-col gap-1.5">
+            <Input
+              label="Monto a pagar"
+              type="number"
+              icon={CurrencyDollarCircle}
+              min={1}
+              step="1"
+              placeholder="150"
+              value={montoDeseado}
+              onChange={setMontoDeseado}
+              isRequired
+            />
+            {monto > 0 &&
+              (seraTop1 ? (
+                <p className="text-sm font-medium text-success-primary">🏆 ¡Con este monto serás el jefe #1!</p>
+              ) : (
+                <p className="text-sm text-quaternary">
+                  Tu jefe se une a la lista. Paga más de {formatMonto(precioMinimo)} para ser el #1.
+                </p>
+              ))}
+          </div>
 
           {error && <p className="text-sm text-error-primary">{error}</p>}
 
           <Button type="submit" color="primary" isLoading={enviando} isDisabled={enviando}>
-            Pagar y convertirme en el jefe #1
+            {seraTop1 ? 'Pagar y ser el jefe #1' : 'Pagar y patrocinar mi jefe'}
           </Button>
         </form>
       </div>
