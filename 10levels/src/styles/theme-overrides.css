@@ -1,18 +1,9 @@
-/* 10 Levels runs light-mode only, tinted cream instead of Untitled UI's default white/gray.
-   Overriding the semantic tokens here (rather than editing the generated theme.css) keeps
-   `npx untitledui upgrade` safe to run later. */
+/* 10 Levels runs dark-mode only, tinted cool navy instead of Untitled UI's default
+   neutral gray, with a warm orange brand accent for contrast. Overriding the semantic
+   tokens here (rather than editing the generated theme.css) keeps `npx untitledui
+   upgrade` safe to run later. <html> carries the `dark-mode` class permanently — see
+   index.html — so these apply everywhere without a light/dark toggle. */
 :root {
-  --color-bg-primary: #fbf6ec;
-  --color-bg-primary_alt: #fbf6ec;
-  --color-bg-secondary: #fffdf8;
-  --color-bg-secondary_alt: #fffdf8;
-  --color-bg-tertiary: #f3ecdb;
-  --color-bg-quaternary: #ead9b6;
-
-  --color-border-primary: #e7dcc0;
-  --color-border-secondary: #efe6cf;
-  --color-border-tertiary: #f3ecdb;
-
   /* Brand color is orange, not Untitled UI's default purple — every "brand"/"primary"
      token (buttons, headings, focus rings, badges) derives from this scale, so
      re-pointing it here reskins the whole site in one place. */
@@ -27,4 +18,17 @@
   --color-brand-800: var(--color-orange-800);
   --color-brand-900: var(--color-orange-900);
   --color-brand-950: var(--color-orange-950);
+}
+
+.dark-mode {
+  --color-bg-primary: #05070d;
+  --color-bg-primary_alt: #05070d;
+  --color-bg-secondary: #0b0f18;
+  --color-bg-secondary_alt: #0b0f18;
+  --color-bg-tertiary: #131a26;
+  --color-bg-quaternary: #1c2532;
+
+  --color-border-primary: #232b3a;
+  --color-border-secondary: #1a212d;
+  --color-border-tertiary: #141a24;
 }

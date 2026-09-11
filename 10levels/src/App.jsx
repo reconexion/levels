@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchJefes, fetchStats } from './api'
 import BossMenu from './components/BossMenu'
 import Patrocinar from './components/Patrocinar'
+import RainBackground from './components/RainBackground'
 import PlatformerGame from './game/PlatformerGame'
 import { POINTS_PER_VICTORY, WEAPON_UPGRADE_COSTS, nextUpgradeCost } from './game/progression'
 import { useLocalStorage } from './utils/useLocalStorage'
@@ -68,8 +69,9 @@ function App() {
     setWeaponLevel((l) => Math.min(WEAPON_UPGRADE_COSTS.length - 1, l + 1))
   }
 
+  let screenContent
   if (screen === 'fight' && selectedJefe) {
-    return (
+    screenContent = (
       <PlatformerGame
         key={`${selectedJefe.id}-${sesionId}`}
         jefe={selectedJefe}
@@ -79,10 +81,8 @@ function App() {
         onExit={handleExitFight}
       />
     )
-  }
-
-  if (screen === 'patrocinar') {
-    return (
+  } else if (screen === 'patrocinar') {
+    screenContent = (
       <Patrocinar
         stats={stats}
         onBack={() => {
@@ -92,22 +92,29 @@ function App() {
         }}
       />
     )
+  } else {
+    screenContent = (
+      <BossMenu
+        jefes={jefes}
+        loading={jefesLoading}
+        error={jefesError}
+        onRetry={loadJefes}
+        onSelectJefe={handleSelectJefe}
+        onPatrocinar={() => setScreen('patrocinar')}
+        points={points}
+        weaponLevel={weaponLevel}
+        onUpgradeWeapon={handleUpgradeWeapon}
+        jefesVencidosTotal={jefesVencidosTotal}
+        stats={stats}
+      />
+    )
   }
 
   return (
-    <BossMenu
-      jefes={jefes}
-      loading={jefesLoading}
-      error={jefesError}
-      onRetry={loadJefes}
-      onSelectJefe={handleSelectJefe}
-      onPatrocinar={() => setScreen('patrocinar')}
-      points={points}
-      weaponLevel={weaponLevel}
-      onUpgradeWeapon={handleUpgradeWeapon}
-      jefesVencidosTotal={jefesVencidosTotal}
-      stats={stats}
-    />
+    <>
+      <RainBackground />
+      {screenContent}
+    </>
   )
 }
 

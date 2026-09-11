@@ -115,7 +115,7 @@ export default function Patrocinar({ stats, onBack }) {
   // ---- Pantalla de resultado tras volver de Stripe Checkout ----
   if (resultadoPago?.tipo === 'exito') {
     return (
-      <div className="min-h-svh bg-primary px-4 py-10 text-primary sm:px-8">
+      <div className="min-h-svh px-4 py-10 text-primary sm:px-8">
         <div className="mx-auto flex max-w-lg flex-col items-center gap-5 text-center">
           {jefeConfirmado ? (
             <>
@@ -153,7 +153,7 @@ export default function Patrocinar({ stats, onBack }) {
   }
 
   return (
-    <div className="min-h-svh bg-primary px-4 py-10 text-primary sm:px-8">
+    <div className="min-h-svh px-4 py-10 text-primary sm:px-8">
       <div className="mx-auto flex max-w-lg flex-col gap-6">
         <Button color="tertiary" size="sm" iconLeading={ArrowLeft} onClick={onBack} className="self-start">
           Volver
@@ -193,7 +193,7 @@ export default function Patrocinar({ stats, onBack }) {
           </div>
         )}
 
-        <form className="flex flex-col gap-4 rounded-xl border border-secondary bg-secondary p-5 shadow-sm" onSubmit={handleSubmit}>
+        <form className="glass-card flex flex-col gap-4 rounded-xl border border-secondary p-5 shadow-lg shadow-black/30" onSubmit={handleSubmit}>
           <Input
             label="Nombre de tu marca"
             placeholder="Cyberdyne Sodas"

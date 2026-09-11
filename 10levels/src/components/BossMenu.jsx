@@ -71,7 +71,7 @@ function JefesSkeleton() {
   return (
     <ul className="flex w-full flex-col gap-3">
       {[0, 1, 2].map((i) => (
-        <li key={i} className="flex items-center gap-4 rounded-xl border border-secondary bg-secondary p-4 shadow-sm">
+        <li key={i} className="glass-row flex items-center gap-4 rounded-xl border border-secondary p-4 shadow-sm">
           <div className="skeleton-shimmer size-8 shrink-0 rounded-full" />
           <div className="skeleton-shimmer size-14 shrink-0 rounded-[10px]" />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -113,7 +113,7 @@ export default function BossMenu({
   const pageJefes = jefes.slice((currentPage - 1) * JEFES_POR_PAGINA, currentPage * JEFES_POR_PAGINA)
 
   return (
-    <div className="min-h-svh bg-primary px-4 py-10 text-primary sm:px-8">
+    <div className="min-h-svh px-4 py-10 text-primary sm:px-8">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-8">
         <header className="animate-in fade-in slide-in-from-top-4 flex flex-col items-center gap-3 text-center duration-700">
           <h1 className="text-display-sm font-semibold text-brand-secondary">10 LEVELS</h1>
@@ -126,7 +126,7 @@ export default function BossMenu({
           )}
         </header>
 
-        <section className="cta-sponsor animate-in fade-in slide-in-from-bottom-2 relative flex w-full flex-wrap items-center justify-between gap-4 overflow-hidden rounded-xl border-2 border-utility-brand-300 bg-secondary p-5 shadow-md duration-500">
+        <section className="cta-sponsor glass-card animate-in fade-in slide-in-from-bottom-2 relative flex w-full flex-wrap items-center justify-between gap-4 overflow-hidden rounded-xl border-2 border-utility-brand-400/50 p-5 shadow-lg shadow-black/40 duration-500">
           <div aria-hidden className="cta-glow pointer-events-none absolute inset-0" />
           <div className="relative z-10 flex items-center gap-3">
             <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-solid text-white shadow-xs-skeuomorphic">
@@ -154,7 +154,7 @@ export default function BossMenu({
           </Button>
         </section>
 
-        <section className="animate-in fade-in slide-in-from-bottom-2 flex w-full flex-wrap items-center gap-6 rounded-xl border border-secondary bg-secondary p-5 shadow-sm duration-500">
+        <section className="glass-card animate-in fade-in slide-in-from-bottom-2 flex w-full flex-wrap items-center gap-6 rounded-xl border border-secondary p-5 shadow-lg shadow-black/30 duration-500">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs tracking-wide text-quaternary uppercase">Puntos</span>
             <strong className="text-lg text-primary">{points}</strong>
@@ -181,7 +181,7 @@ export default function BossMenu({
           </Button>
         </section>
 
-        <section className="flex w-full flex-col gap-4 rounded-xl border border-secondary bg-secondary p-5 shadow-sm">
+        <section className="glass-card flex w-full flex-col gap-4 rounded-xl border border-secondary p-5 shadow-lg shadow-black/30">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-brand-secondary">Jefes patrocinados</h2>
             {!loading && !error && jefes.length > 0 && (
@@ -211,7 +211,7 @@ export default function BossMenu({
                       key={jefe.id}
                       style={{ animationDelay: `${i * 70}ms` }}
                       className={
-                        'ranked-row group relative flex items-center gap-4 rounded-xl border bg-primary p-4 pt-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg' +
+                        'ranked-row glass-row group relative flex items-center gap-4 rounded-xl border p-4 pt-6 shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg' +
                         (jefe.es_top1 ? ' border-utility-yellow-300' : ' border-secondary')
                       }
                     >
