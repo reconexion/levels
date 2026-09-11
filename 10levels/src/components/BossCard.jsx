@@ -6,10 +6,11 @@ import BossSkinPreview from './BossSkinPreview'
 import RankBadge from './RankBadge'
 import { shadeColorHex } from '../game/bossSkins'
 import { bossTierNameForMonto, TIER_BADGE_COLOR } from '../game/bossTier'
-import { categoriaEstiloFor } from '../game/categorias'
+import { categoriaEstiloFor, CATEGORIA_LABEL_KEY } from '../game/categorias'
+import { useLanguage } from '../i18n/LanguageContext'
 
-function formatMonto(monto) {
-  return new Intl.NumberFormat('es-MX', {
+function formatMonto(monto, lang) {
+  return new Intl.NumberFormat(lang === 'es' ? 'es-MX' : 'en-US', {
     style: 'currency',
     currency: 'MXN',
     maximumFractionDigits: 0,
@@ -39,6 +40,7 @@ function CardBlob({ id, colorA, colorB }) {
 }
 
 export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
+  const { t, lang } = useLanguage()
   const tierName = bossTierNameForMonto(jefe.monto_pagado)
   const colorB = shadeColorHex(jefe.color_hex, -42)
   const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
@@ -98,7 +100,7 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
         <div className="flex shrink-0 flex-col">
           <p className="flex items-center gap-1 text-3xl leading-none font-black tracking-tight sm:text-4xl">
             <Heart className="size-5 text-utility-red-400 sm:size-6" />
-            {Math.round(jefe.hp_max).toLocaleString('es-MX')}
+            {Math.round(jefe.hp_max).toLocaleString(lang === 'es' ? 'es-MX' : 'en-US')}
             <span className="ml-0.5 text-sm font-semibold text-white/70">HP</span>
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -108,7 +110,7 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
               </Badge>
             )}
             <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
-              {tierName}
+              {t(tierName)}
             </Badge>
             <span className="inline-flex items-center gap-1 text-xs font-medium text-utility-orange-300">
               <Zap className="size-3" />
@@ -123,14 +125,16 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
 
         <div className="min-w-0 flex-1 basis-40">
           <div className="flex flex-wrap items-center gap-1.5">
-            <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
+            <p className="truncate text-xs font-medium text-white/60">
+              {t('{amount} paid', { amount: formatMonto(jefe.monto_pagado, lang) })}
+            </p>
             {jefe.categoria && (
               <span
                 className="inline-flex items-center gap-1 rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-white/90"
                 style={{ boxShadow: `inset 0 0 0 1px ${categoriaTint}55` }}
               >
                 <CategoriaIcon className="size-2.5" style={{ color: categoriaTint }} />
-                {jefe.categoria}
+                {t(CATEGORIA_LABEL_KEY[jefe.categoria] ?? jefe.categoria)}
               </span>
             )}
           </div>
@@ -140,7 +144,7 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              title={`Visitar la página de ${jefe.nombre_marca}`}
+              title={t('Visit {name}’s page', { name: jefe.nombre_marca })}
               className="boss-name-link block truncate text-lg font-extrabold sm:text-xl"
               style={{ '--boss-accent': jefe.color_hex }}
             >
@@ -153,7 +157,7 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
         </div>
 
         <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
-          Retar
+          {t('Challenge')}
         </Button>
       </div>
     </div>

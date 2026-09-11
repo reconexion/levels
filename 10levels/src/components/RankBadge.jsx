@@ -1,3 +1,5 @@
+import { useLanguage } from '../i18n/LanguageContext'
+
 // Rank 1/2/3 get a medal treatment; everyone else gets a plain numbered circle.
 const MEDAL_STYLE = [
   { ring: 'ring-utility-yellow-300', bg: 'bg-utility-yellow-50', text: 'text-utility-yellow-700', emoji: '🥇' },
@@ -6,6 +8,7 @@ const MEDAL_STYLE = [
 ]
 
 export default function RankBadge({ rank }) {
+  const { t } = useLanguage()
   const medal = MEDAL_STYLE[rank - 1]
   if (!medal) {
     return (
@@ -17,7 +20,7 @@ export default function RankBadge({ rank }) {
   return (
     <span
       className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow ring-2 ${medal.bg} ${medal.text} ${medal.ring} ${rank === 1 ? 'rank-crown' : ''}`}
-      title={`Puesto ${rank}`}
+      title={t('Rank {rank}', { rank })}
     >
       {medal.emoji}
     </span>

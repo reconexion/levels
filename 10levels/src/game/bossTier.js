@@ -2,16 +2,19 @@
 // PlatformerGame's BOSS_STYLES, and in the menu's sponsor tier badge) scales with monto_pagado
 // instead, so a bigger check also reads as a bigger deal. Shared here so both stay in sync.
 
+// English canonical names — purely a display value derived from monto_pagado on the
+// fly (never stored), so renaming them here needed no backend/DB change. Translated
+// for display via i18n/translations.js.
 export const BOSS_TIER_NAMES = [
   'Noob',
-  'Principiante',
+  'Beginner',
   'Amateur',
-  'Competente',
-  'Avanzado',
-  'Experto',
-  'Élite',
-  'Maestro',
-  'Leyenda',
+  'Competent',
+  'Advanced',
+  'Expert',
+  'Elite',
+  'Master',
+  'Legend',
   'PRO',
 ]
 
@@ -30,13 +33,13 @@ export function bossTierNameForMonto(monto) {
 // needs a consistent color (kept here so it can't drift out of sync with the names above).
 export const TIER_BADGE_COLOR = {
   Noob: 'gray',
-  Principiante: 'gray',
+  Beginner: 'gray',
   Amateur: 'blue',
-  Competente: 'blue',
-  Avanzado: 'success',
-  Experto: 'success',
-  Élite: 'purple',
-  Maestro: 'warning',
-  Leyenda: 'pink',
+  Competent: 'blue',
+  Advanced: 'success',
+  Expert: 'success',
+  Elite: 'purple',
+  Master: 'warning',
+  Legend: 'pink',
   PRO: 'brand',
 }

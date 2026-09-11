@@ -29,3 +29,17 @@ export const CATEGORIA_ESTILO = {
 export function categoriaEstiloFor(categoria) {
   return CATEGORIA_ESTILO[categoria] ?? CATEGORIA_ESTILO['Otro']
 }
+
+// The stored value (sent to/from the API) stays this fixed Spanish string regardless
+// of UI language — only the label shown to the user is translated. Pass the result
+// through t() to display it.
+export const CATEGORIA_LABEL_KEY = {
+  'Comida y Bebida': 'Food & Drink',
+  Tecnología: 'Technology',
+  Videojuegos: 'Gaming',
+  'Ropa y Moda': 'Fashion & Apparel',
+  Entretenimiento: 'Entertainment',
+  Deportes: 'Sports',
+  Servicios: 'Services',
+  Otro: 'Other',
+}

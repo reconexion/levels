@@ -5,6 +5,7 @@ import { atacar as apiAtacar, iniciarCombate } from '../api'
 import { bossStyleForSkinId } from './bossSkins'
 import { getBonusDamage, getPlayerMaxHp, isWeaponMaxed } from './progression'
 import { PLAYER_COLORS, PLAYER_SKINS } from './playerCosmetics'
+import { useLanguage } from '../i18n/LanguageContext'
 import { useLocalStorage } from '../utils/useLocalStorage'
 import './PlatformerGame.css'
 import gunNormalSrc from '../assets/predeterminado.png'
@@ -103,46 +104,46 @@ function getDifficultyParams(index) {
 const FEEL = getDifficultyParams(2)
 
 const KILL_LABELS = {
-  dash: 'Embestida del jefe',
-  projectile: 'Ráfaga de proyectiles',
-  slam: 'Golpe de tierra',
-  spikes: 'Picos del suelo',
-  laser: 'Rayo láser',
-  contact: 'Contacto con el jefe',
+  dash: 'Boss charge',
+  projectile: 'Projectile barrage',
+  slam: 'Ground slam',
+  spikes: 'Floor spikes',
+  laser: 'Laser beam',
+  contact: 'Contact with the boss',
 }
 
 const DEATH_TIPS = {
   dash: [
-    'Consejo: cuando el jefe empieza a brillar, prepárate para saltar a un lado.',
-    'Consejo: la embestida solo golpea una vez — aléjate en cuanto la esquives.',
+    'Tip: when the boss starts glowing, get ready to jump aside.',
+    'Tip: the charge only hits once — move away as soon as you dodge it.',
   ],
   projectile: [
-    'Consejo: muévete en zigzag, los proyectiles no giran para seguirte.',
-    'Consejo: ponte detrás de una plataforma para bloquear la ráfaga.',
+    'Tip: move in a zigzag, projectiles don’t turn to follow you.',
+    'Tip: stand behind a platform to block the barrage.',
   ],
   slam: [
-    'Consejo: salta justo cuando el jefe caiga en picado hacia el suelo.',
-    'Consejo: el golpe de tierra solo daña si estás pisando el suelo — quédate en el aire.',
+    'Tip: jump right when the boss dives toward the ground.',
+    'Tip: the ground slam only hurts if you’re standing on the floor — stay in the air.',
   ],
   spikes: [
-    'Consejo: los picos aparecen donde TÚ estabas — no dejes de moverte durante el aviso rojo.',
-    'Consejo: corre en una dirección y no pares hasta que termine la ráfaga de picos.',
+    'Tip: spikes appear where YOU were standing — keep moving during the red warning.',
+    'Tip: run in one direction and don’t stop until the spike barrage ends.',
   ],
   laser: [
-    'Consejo: sube a una plataforma elevada para esquivar el láser rasante.',
-    'Consejo: salta justo antes de que termine el aviso parpadeante del láser.',
+    'Tip: get on a raised platform to dodge the low laser.',
+    'Tip: jump right before the blinking laser warning ends.',
   ],
   contact: [
-    'Consejo: mantén las distancias, tocar al jefe también hace daño.',
-    'Consejo: dispara mientras retrocedes en vez de acercarte.',
+    'Tip: keep your distance, touching the boss also deals damage.',
+    'Tip: shoot while backing away instead of approaching.',
   ],
 }
 
 const GENERIC_DEATH_TIPS = [
-  'Consejo: tu arma no se sobrecalienta, dispara sin miedo.',
-  'Consejo: eres invulnerable un instante después de cada golpe — aprovéchalo para escapar.',
-  'Consejo: si la dificultad actual es muy alta, bájala desde el menú de abajo.',
-  'Consejo: las plataformas elevadas son tu mejor refugio contra ataques a ras de suelo.',
+  'Tip: your weapon doesn’t overheat, shoot without fear.',
+  'Tip: you’re invulnerable for an instant after each hit — use it to escape.',
+  'Tip: if the current difficulty is too high, lower it from the menu below.',
+  'Tip: raised platforms are your best shelter from ground-level attacks.',
 ]
 
 const platforms = [
@@ -217,27 +218,27 @@ const GUN_IMAGES = GUN_LEVELS.map((lvl) => {
 
 const FACE_OPTIONS = [
   { id: 'omaka', name: 'OMAKA' },
-  { id: 'redondo', name: 'Redondos' },
-  { id: 'feliz', name: 'Felices' },
-  { id: 'decidido', name: 'Decididos' },
-  { id: 'guino', name: 'Guiño' },
+  { id: 'redondo', name: 'Round' },
+  { id: 'feliz', name: 'Happy' },
+  { id: 'decidido', name: 'Determined' },
+  { id: 'guino', name: 'Wink' },
   { id: 'ox', name: 'O x' },
 ]
 
 const CROSSHAIR_STYLES = [
-  { id: 'cruz', name: 'Cruz' },
-  { id: 'circulo', name: 'Círculo' },
-  { id: 'diamante', name: 'Diamante' },
-  { id: 'punto', name: 'Punto' },
+  { id: 'cruz', name: 'Cross' },
+  { id: 'circulo', name: 'Circle' },
+  { id: 'diamante', name: 'Diamond' },
+  { id: 'punto', name: 'Dot' },
 ]
 
 // 4 selectable arena backdrops. Each is built from exactly two user-editable colors
 // (colorA/colorB) so players can repaint the scene, same pattern as BOSS_STYLES above.
 const BACKGROUNDS = [
-  { id: 'ciudad-noche', name: 'Ciudad futurista (noche)', colorA: '#0b1030', colorB: '#ff2fd1', hintA: 'Cielo', hintB: 'Luces de neón' },
-  { id: 'ciudad-dia', name: 'Ciudad futurista (día)', colorA: '#8ec9ff', colorB: '#5ec8ff', hintA: 'Cielo', hintB: 'Reflejos' },
-  { id: 'playa-dia', name: 'Playa (día)', colorA: '#8fd4f5', colorB: '#ffd23f', hintA: 'Cielo / mar', hintB: 'Sol' },
-  { id: 'playa-noche', name: 'Playa (noche)', colorA: '#0c1440', colorB: '#cfe0ff', hintA: 'Cielo / mar', hintB: 'Luna' },
+  { id: 'ciudad-noche', name: 'Futuristic City (Night)', colorA: '#0b1030', colorB: '#ff2fd1', hintA: 'Sky', hintB: 'Neon lights' },
+  { id: 'ciudad-dia', name: 'Futuristic City (Day)', colorA: '#8ec9ff', colorB: '#5ec8ff', hintA: 'Sky', hintB: 'Reflections' },
+  { id: 'playa-dia', name: 'Beach (Day)', colorA: '#8fd4f5', colorB: '#ffd23f', hintA: 'Sky / sea', hintB: 'Sun' },
+  { id: 'playa-noche', name: 'Beach (Night)', colorA: '#0c1440', colorB: '#cfe0ff', hintA: 'Sky / sea', hintB: 'Moon' },
 ]
 
 // Deterministic pseudo-random skyline, generated once at module load so buildings/windows
@@ -330,6 +331,7 @@ export default function PlatformerGame({
   onVictory,
   onExit,
 }) {
+  const { t } = useLanguage()
   const canvasRef = useRef(null)
   const bossImageRef = useRef(null)
   const gameControlsRef = useRef(null)
@@ -363,14 +365,14 @@ export default function PlatformerGame({
   const onColorChange = (idx) => {
     colorRef.current = idx
     setColorIndex(idx)
-    sileo.info({ title: 'Color', description: PLAYER_COLORS[idx].name })
+    sileo.info({ title: t('Color'), description: t(PLAYER_COLORS[idx].name) })
   }
 
   const onFaceChange = (e) => {
     const idx = Number(e.target.value)
     faceRef.current = idx
     setFaceIndex(idx)
-    sileo.info({ title: 'Cara', description: FACE_OPTIONS[idx].name })
+    sileo.info({ title: t('Face'), description: t(FACE_OPTIONS[idx].name) })
   }
 
   const onSkinChange = (e) => {
@@ -385,14 +387,14 @@ export default function PlatformerGame({
       colorRef.current = colorIdx
       setColorIndex(colorIdx)
     }
-    sileo.info({ title: 'Skin', description: PLAYER_SKINS[idx].name })
+    sileo.info({ title: t('Skin'), description: t(PLAYER_SKINS[idx].name) })
   }
 
   const onCrosshairStyleChange = (e) => {
     const idx = Number(e.target.value)
     crosshairStyleRef.current = idx
     setCrosshairStyleIndex(idx)
-    sileo.info({ title: 'Mira', description: CROSSHAIR_STYLES[idx].name })
+    sileo.info({ title: t('Crosshair'), description: t(CROSSHAIR_STYLES[idx].name) })
   }
 
   const onCrosshairColorChange = (e) => {
@@ -410,7 +412,7 @@ export default function PlatformerGame({
     bgColorBRef.current = BACKGROUNDS[idx].colorB
     setBgColorA(BACKGROUNDS[idx].colorA)
     setBgColorB(BACKGROUNDS[idx].colorB)
-    sileo.info({ title: 'Fondo', description: BACKGROUNDS[idx].name })
+    sileo.info({ title: t('Background'), description: t(BACKGROUNDS[idx].name) })
   }
 
   const onBgColorAChange = (e) => {
@@ -446,6 +448,21 @@ export default function PlatformerGame({
 
     let ctx = mainCtx
 
+    // Canvas gradients are relatively expensive to build (color-stop interpolation),
+    // and several background/boss gradients only ever depend on colors that rarely
+    // change mid-fight (background presets, boss tint) — recreating them from scratch
+    // every single frame was the main reason the fight screen felt choppy. Cache by a
+    // string key derived from whatever inputs actually affect the gradient.
+    const gradientCache = new Map()
+    function cachedGradient(key, factory) {
+      let g = gradientCache.get(key)
+      if (!g) {
+        g = factory()
+        gradientCache.set(key, g)
+      }
+      return g
+    }
+
     // Derived once per mount — the parent remounts this component (via a `key`) whenever the
     // player picks a different jefe, so these never need to change mid-fight.
     const bossName = jefe.nombre_marca || 'JEFE'
@@ -454,6 +471,22 @@ export default function PlatformerGame({
     const bossStyle = bossStyleForSkinId(jefe.skin_id)
     const dmgMult = jefe.danio_por_golpe / CONTACT_DAMAGE
     const playerMaxHp = getPlayerMaxHp(weaponLevel, bonusLevel)
+
+    // Boss aura/body gradients depend only on the fixed values above — never recreated
+    // per frame like they used to be (creating 2+ canvas gradients 60x/sec for colors
+    // that never change was the single biggest cause of "the game feels choppy").
+    const bossAccent = bossColorB
+    const bossRim = shadeColor(bossColorA, -40)
+    const bossAccentRgb = hexToRgb(bossAccent)
+    let bossAuraGrad = null
+    if (bossStyle.aura > 0) {
+      bossAuraGrad = mainCtx.createRadialGradient(0, 0, BOSS_W * 0.2, 0, 0, BOSS_W * 0.78)
+      bossAuraGrad.addColorStop(0, `rgba(${bossAccentRgb.r},${bossAccentRgb.g},${bossAccentRgb.b},${bossStyle.aura})`)
+      bossAuraGrad.addColorStop(1, `rgba(${bossAccentRgb.r},${bossAccentRgb.g},${bossAccentRgb.b},0)`)
+    }
+    const bossBodyGrad = mainCtx.createLinearGradient(0, -BOSS_H / 2, 0, BOSS_H / 2)
+    bossBodyGrad.addColorStop(0, shadeColor(bossColorA, 20))
+    bossBodyGrad.addColorStop(1, shadeColor(bossColorA, -20))
 
     const bossLogoImage = new Image()
     bossLogoImage.crossOrigin = 'anonymous'
@@ -658,12 +691,12 @@ export default function PlatformerGame({
 
     function triggerDefeat() {
       const type = player.lastHitType || 'contact'
-      const label = KILL_LABELS[type] || KILL_LABELS.contact
+      const label = t(KILL_LABELS[type] || KILL_LABELS.contact)
       const pool = [...(DEATH_TIPS[type] || []), ...GENERIC_DEATH_TIPS]
-      const tip = pool[Math.floor(Math.random() * pool.length)]
+      const tip = t(pool[Math.floor(Math.random() * pool.length)])
       message = {
-        text: 'DERROTA',
-        subtitle: `Eliminado por: ${label}`,
+        text: t('DEFEAT'),
+        subtitle: t('Killed by: {label}', { label }),
         tip,
         timer: DEATH_TOTAL,
         maxTimer: DEATH_TOTAL,
@@ -680,7 +713,7 @@ export default function PlatformerGame({
         totalOut: DEATH_FADE_OUT,
         resetDone: false,
       }
-      sileo.error({ title: 'DERROTA', description: `Eliminado por: ${label}`, duration: 2600 })
+      sileo.error({ title: t('DEFEAT'), description: t('Killed by: {label}', { label }), duration: 2600 })
     }
 
     function getDeathOverlayAlpha() {
@@ -745,13 +778,13 @@ export default function PlatformerGame({
       shakeTrauma = 1
       spawnDust(boss.x + boss.w / 2, boss.y + boss.h / 2, 40, Math.PI * 2, 0.9)
       message = {
-        text: 'VICTORIA',
-        subtitle: `Has derrotado a ${bossName}`,
+        text: t('VICTORY'),
+        subtitle: t('You defeated {name}!', { name: bossName }),
         timer: 2.6,
         maxTimer: 2.6,
         color: '#ffd23f',
       }
-      sileo.success({ title: '¡VICTORIA!', description: `Has derrotado a ${bossName}`, duration: 2600 })
+      sileo.success({ title: t('VICTORY!'), description: t('You defeated {name}!', { name: bossName }), duration: 2600 })
       onVictory?.(jefe)
     }
 
@@ -763,7 +796,7 @@ export default function PlatformerGame({
       boss.x = WORLD_W - 220
       boss.y = BOSS_BASE_Y
       boss.hitFlash = 0
-      sileo.info({ title: `${bossName} ha vuelto`, description: 'La arena tiembla de nuevo', duration: 2200 })
+      sileo.info({ title: t('{name} is back', { name: bossName }), description: t('The arena shakes once again'), duration: 2200 })
     }
 
     function resetFight() {
@@ -1231,10 +1264,13 @@ export default function PlatformerGame({
 
     function drawCityBackground(colorA, colorB, isNight) {
       const skyline = 340
-      const grad = ctx.createLinearGradient(0, 0, 0, WORLD_H)
-      grad.addColorStop(0, shadeColor(colorA, isNight ? -8 : 25))
-      grad.addColorStop(0.6, colorA)
-      grad.addColorStop(1, shadeColor(colorA, isNight ? -30 : -8))
+      const grad = cachedGradient(`city-sky-${colorA}-${isNight}`, () => {
+        const g = ctx.createLinearGradient(0, 0, 0, WORLD_H)
+        g.addColorStop(0, shadeColor(colorA, isNight ? -8 : 25))
+        g.addColorStop(0.6, colorA)
+        g.addColorStop(1, shadeColor(colorA, isNight ? -30 : -8))
+        return g
+      })
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, WORLD_W, WORLD_H)
 
@@ -1250,9 +1286,12 @@ export default function PlatformerGame({
         }
         const moonX = WORLD_W - 120
         const moonY = 90
-        const glow = ctx.createRadialGradient(moonX, moonY, 4, moonX, moonY, 100)
-        glow.addColorStop(0, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},0.35)`)
-        glow.addColorStop(1, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},0)`)
+        const glow = cachedGradient(`city-moon-${colorB}`, () => {
+          const g = ctx.createRadialGradient(moonX, moonY, 4, moonX, moonY, 100)
+          g.addColorStop(0, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},0.35)`)
+          g.addColorStop(1, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},0)`)
+          return g
+        })
         ctx.fillStyle = glow
         ctx.beginPath()
         ctx.arc(moonX, moonY, 100, 0, Math.PI * 2)
@@ -1264,9 +1303,12 @@ export default function PlatformerGame({
       } else {
         const sunX = 140
         const sunY = 90
-        const glow = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 130)
-        glow.addColorStop(0, 'rgba(255,244,200,0.55)')
-        glow.addColorStop(1, 'rgba(255,244,200,0)')
+        const glow = cachedGradient('city-sun', () => {
+          const g = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, 130)
+          g.addColorStop(0, 'rgba(255,244,200,0.55)')
+          g.addColorStop(1, 'rgba(255,244,200,0)')
+          return g
+        })
         ctx.fillStyle = glow
         ctx.beginPath()
         ctx.arc(sunX, sunY, 130, 0, Math.PI * 2)
@@ -1335,9 +1377,12 @@ export default function PlatformerGame({
 
     function drawBeachBackground(colorA, colorB, isNight) {
       const horizon = 330
-      const grad = ctx.createLinearGradient(0, 0, 0, horizon)
-      grad.addColorStop(0, shadeColor(colorA, isNight ? -12 : 22))
-      grad.addColorStop(1, colorA)
+      const grad = cachedGradient(`beach-sky-${colorA}-${isNight}`, () => {
+        const g = ctx.createLinearGradient(0, 0, 0, horizon)
+        g.addColorStop(0, shadeColor(colorA, isNight ? -12 : 22))
+        g.addColorStop(1, colorA)
+        return g
+      })
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, WORLD_W, horizon)
 
@@ -1354,9 +1399,12 @@ export default function PlatformerGame({
       const rgbB = hexToRgb(colorB)
       const bodyX = WORLD_W - 170
       const bodyY = 100
-      const glow = ctx.createRadialGradient(bodyX, bodyY, 4, bodyX, bodyY, isNight ? 90 : 130)
-      glow.addColorStop(0, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},${isNight ? 0.4 : 0.55})`)
-      glow.addColorStop(1, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},0)`)
+      const glow = cachedGradient(`beach-glow-${colorB}-${isNight}`, () => {
+        const g = ctx.createRadialGradient(bodyX, bodyY, 4, bodyX, bodyY, isNight ? 90 : 130)
+        g.addColorStop(0, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},${isNight ? 0.4 : 0.55})`)
+        g.addColorStop(1, `rgba(${rgbB.r},${rgbB.g},${rgbB.b},0)`)
+        return g
+      })
       ctx.fillStyle = glow
       ctx.beginPath()
       ctx.arc(bodyX, bodyY, isNight ? 90 : 130, 0, Math.PI * 2)
@@ -1367,9 +1415,12 @@ export default function PlatformerGame({
       ctx.fill()
 
       // sea band
-      const seaGrad = ctx.createLinearGradient(0, horizon - 20, 0, horizon + 60)
-      seaGrad.addColorStop(0, isNight ? shadeColor(colorA, -10) : shadeColor(colorA, 12))
-      seaGrad.addColorStop(1, isNight ? shadeColor(colorA, -35) : shadeColor(colorA, -18))
+      const seaGrad = cachedGradient(`beach-sea-${colorA}-${isNight}`, () => {
+        const g = ctx.createLinearGradient(0, horizon - 20, 0, horizon + 60)
+        g.addColorStop(0, isNight ? shadeColor(colorA, -10) : shadeColor(colorA, 12))
+        g.addColorStop(1, isNight ? shadeColor(colorA, -35) : shadeColor(colorA, -18))
+        return g
+      })
       ctx.fillStyle = seaGrad
       ctx.fillRect(0, horizon - 20, WORLD_W, 80)
 
@@ -2079,9 +2130,9 @@ export default function PlatformerGame({
       const style = bossStyle
       const colorA = bossColorA
       const colorB = bossColorB
-      const accent = colorB
-      const rim = shadeColor(colorA, -40)
-      const accentRgb = hexToRgb(accent)
+      const accent = bossAccent
+      const rim = bossRim
+      const accentRgb = bossAccentRgb
       const cx = boss.x + boss.w / 2
       const cy = boss.y + boss.h / 2
 
@@ -2121,11 +2172,8 @@ export default function PlatformerGame({
       }
 
       // aura strength varies per style — noob tier has none, pro tiers glow strongly
-      if (style.aura > 0) {
-        const auraGrad = ctx.createRadialGradient(0, 0, w * 0.2, 0, 0, w * 0.78)
-        auraGrad.addColorStop(0, `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},${style.aura})`)
-        auraGrad.addColorStop(1, `rgba(${accentRgb.r},${accentRgb.g},${accentRgb.b},0)`)
-        ctx.fillStyle = auraGrad
+      if (bossAuraGrad) {
+        ctx.fillStyle = bossAuraGrad
         ctx.beginPath()
         ctx.arc(0, 0, w * 0.78, 0, Math.PI * 2)
         ctx.fill()
@@ -2157,10 +2205,7 @@ export default function PlatformerGame({
         ctx.fill()
         ctx.globalAlpha = 1
       } else {
-        const grad = ctx.createLinearGradient(0, -h / 2, 0, h / 2)
-        grad.addColorStop(0, shadeColor(colorA, 20))
-        grad.addColorStop(1, shadeColor(colorA, -20))
-        ctx.fillStyle = grad
+        ctx.fillStyle = bossBodyGrad
         ctx.fill()
       }
 
@@ -2515,7 +2560,7 @@ export default function PlatformerGame({
       ctx.strokeRect(pbx, pby, pbw, pbh)
       ctx.fillStyle = '#fff'
       ctx.font = '11px ui-monospace, monospace'
-      ctx.fillText('TÚ', pbx, pby - 6)
+      ctx.fillText(t('YOU'), pbx, pby - 6)
 
       ctx.font = 'bold 11px ui-monospace, monospace'
       ctx.textAlign = 'center'
@@ -2748,13 +2793,13 @@ export default function PlatformerGame({
           theme="dark" -> light "#f2f2f2" toast) — "light" is what actually renders a dark toast. */}
       <Toaster position="top-right" theme="light" />
       <div className="platformer-fight-bar">
-        <span className="platformer-fight-boss">Retando a {jefe.nombre_marca}</span>
+        <span className="platformer-fight-boss">{t('Challenging {name}', { name: jefe.nombre_marca })}</span>
         <div className="platformer-fight-actions">
           <button type="button" className="platformer-exit-button" onClick={() => gameControlsRef.current?.resetFight()}>
-            Reiniciar pelea
+            {t('Restart fight')}
           </button>
           <button type="button" className="platformer-exit-button" onClick={onExit}>
-            Volver al menú
+            {t('Back to menu')}
           </button>
         </div>
       </div>
@@ -2767,21 +2812,24 @@ export default function PlatformerGame({
       <div className="platformer-controls">
         <div className="platformer-customize">
           <span className="platformer-customize-label">
-            Arma: {GUN_LEVELS[weaponLevel].name}
-            {bonusLevel > 0 ? ` +${bonusLevel}` : ''} · Daño {GUN_LEVELS[weaponLevel].damage + getBonusDamage(bonusLevel)} · Cadencia{' '}
-            {GUN_LEVELS[weaponLevel].fireRate.toFixed(2)}s
+            {t('Weapon: {name}', { name: GUN_LEVELS[weaponLevel].name })}
+            {bonusLevel > 0 ? ` +${bonusLevel}` : ''} ·{' '}
+            {t('Damage {dmg} · Fire rate {rate}s', {
+              dmg: GUN_LEVELS[weaponLevel].damage + getBonusDamage(bonusLevel),
+              rate: GUN_LEVELS[weaponLevel].fireRate.toFixed(2),
+            })}
           </span>
         </div>
         {isWeaponMaxed(weaponLevel) && onWeaponSkinChange && (
           <div className="platformer-customize">
-            <label htmlFor="weapon-skin-select">Skin de arma</label>
+            <label htmlFor="weapon-skin-select">{t('Weapon skin')}</label>
             <select
               id="weapon-skin-select"
               value={weaponSkinIndex}
               onChange={(e) => {
                 const idx = Number(e.target.value)
                 onWeaponSkinChange(idx)
-                sileo.info({ title: 'Skin de arma', description: GUN_LEVELS[idx].name })
+                sileo.info({ title: t('Weapon skin'), description: GUN_LEVELS[idx].name })
               }}
             >
               {GUN_LEVELS.map((lvl, i) => (
@@ -2793,56 +2841,56 @@ export default function PlatformerGame({
           </div>
         )}
         <div className="platformer-customize">
-          <label htmlFor="bg-style-select">Fondo</label>
+          <label htmlFor="bg-style-select">{t('Background')}</label>
           <select id="bg-style-select" value={bgStyleIndex} onChange={onBgStyleChange}>
             {BACKGROUNDS.map((bg, i) => (
               <option key={bg.id} value={i}>
-                {bg.name}
+                {t(bg.name)}
               </option>
             ))}
           </select>
           <input
             type="color"
             className="platformer-color-input"
-            title={BACKGROUNDS[bgStyleIndex].hintA}
-            aria-label={`Color del fondo: ${BACKGROUNDS[bgStyleIndex].hintA}`}
+            title={t(BACKGROUNDS[bgStyleIndex].hintA)}
+            aria-label={t('Background color: {hint}', { hint: t(BACKGROUNDS[bgStyleIndex].hintA) })}
             value={bgColorA}
             onChange={onBgColorAChange}
           />
           <input
             type="color"
             className="platformer-color-input"
-            title={BACKGROUNDS[bgStyleIndex].hintB}
-            aria-label={`Color del fondo: ${BACKGROUNDS[bgStyleIndex].hintB}`}
+            title={t(BACKGROUNDS[bgStyleIndex].hintB)}
+            aria-label={t('Background color: {hint}', { hint: t(BACKGROUNDS[bgStyleIndex].hintB) })}
             value={bgColorB}
             onChange={onBgColorBChange}
           />
         </div>
         <div className="platformer-customize">
-          <label htmlFor="skin-select">Skin</label>
+          <label htmlFor="skin-select">{t('Skin')}</label>
           <select id="skin-select" value={skinIndex} onChange={onSkinChange}>
             {PLAYER_SKINS.map((skin, i) => (
               <option key={skin.id} value={i}>
-                {skin.name}
+                {t(skin.name)}
               </option>
             ))}
           </select>
-          <label htmlFor="face-select">Cara</label>
+          <label htmlFor="face-select">{t('Face')}</label>
           <select id="face-select" value={faceIndex} onChange={onFaceChange}>
             {FACE_OPTIONS.map((face, i) => (
               <option key={face.id} value={i}>
-                {face.name}
+                {t(face.name)}
               </option>
             ))}
           </select>
-          <span className="platformer-customize-label">Color</span>
-          <div className="platformer-swatches" role="group" aria-label="Color del personaje">
+          <span className="platformer-customize-label">{t('Color')}</span>
+          <div className="platformer-swatches" role="group" aria-label={t('Character color')}>
             {PLAYER_COLORS.map((color, i) => (
               <button
                 key={color.id}
                 type="button"
-                title={color.name}
-                aria-label={color.name}
+                title={t(color.name)}
+                aria-label={t(color.name)}
                 aria-pressed={colorIndex === i}
                 className={`platformer-swatch${colorIndex === i ? ' is-selected' : ''}`}
                 style={{ background: color.hex }}
@@ -2852,26 +2900,26 @@ export default function PlatformerGame({
           </div>
         </div>
         <div className="platformer-customize">
-          <label htmlFor="crosshair-style-select">Mira</label>
+          <label htmlFor="crosshair-style-select">{t('Crosshair')}</label>
           <select id="crosshair-style-select" value={crosshairStyleIndex} onChange={onCrosshairStyleChange}>
             {CROSSHAIR_STYLES.map((style, i) => (
               <option key={style.id} value={i}>
-                {style.name}
+                {t(style.name)}
               </option>
             ))}
           </select>
           <input
             type="color"
             className="platformer-color-input"
-            title="Color de la mira"
-            aria-label="Color de la mira"
+            title={t('Crosshair color')}
+            aria-label={t('Crosshair color')}
             value={crosshairColor}
             onChange={onCrosshairColorChange}
           />
         </div>
       </div>
       <p className="platformer-hint">
-        WASD / Flechas para moverte &nbsp;·&nbsp; Espacio para saltar &nbsp;·&nbsp; Click para disparar al jefe
+        {t('Move with WASD / Arrows')} &nbsp;·&nbsp; {t('Space to jump')} &nbsp;·&nbsp; {t('Click to shoot at the boss')}
       </p>
     </div>
   )

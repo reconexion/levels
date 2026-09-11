@@ -5,14 +5,15 @@ import { Input } from './base/input/input'
 import BossCard from './BossCard'
 import Pagination from './Pagination'
 import PlayerPreview from './PlayerPreview'
-import { CATEGORIAS } from '../game/categorias'
+import { useLanguage } from '../i18n/LanguageContext'
+import { CATEGORIAS, CATEGORIA_LABEL_KEY } from '../game/categorias'
 import { WEAPON_LEVELS, getPlayerMaxHp, isWeaponMaxed, upgradeCostFor } from '../game/progression'
 import logoSrc from '../assets/logologo.png'
 
 const JEFES_POR_PAGINA = 8
 
-function formatMonto(monto) {
-  return new Intl.NumberFormat('es-MX', {
+function formatMonto(monto, lang) {
+  return new Intl.NumberFormat(lang === 'es' ? 'es-MX' : 'en-US', {
     style: 'currency',
     currency: 'MXN',
     maximumFractionDigits: 0,
@@ -44,6 +45,7 @@ export default function BossMenu({
   jefesVencidosTotal,
   stats,
 }) {
+  const { t, lang } = useLanguage()
   const [page, setPage] = useState(1)
   const [busqueda, setBusqueda] = useState('')
   const [categoriaFiltro, setCategoriaFiltro] = useState('')
@@ -75,7 +77,7 @@ export default function BossMenu({
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-8">
         <header className="animate-in fade-in slide-in-from-top-4 flex flex-col items-center gap-3 text-center duration-700">
           <img src={logoSrc} alt="Levels" className="h-9 sm:h-11" />
-          <p className="mt-1 text-md text-tertiary">Elige un jefe patrocinado y reta a ver quién es más fuerte.</p>
+          <p className="mt-1 text-md text-tertiary">{t('Choose a sponsored boss and challenge them to see who is stronger.')}</p>
         </header>
 
         <section className="cta-sponsor glass-card animate-in fade-in slide-in-from-bottom-2 relative flex w-full flex-wrap items-center justify-between gap-4 overflow-hidden rounded-xl border-2 border-utility-brand-400/50 p-5 shadow-lg shadow-black/40 duration-500">
@@ -86,12 +88,16 @@ export default function BossMenu({
             </span>
             <div className="flex flex-col">
               <strong className="text-md text-primary">
-                {stats?.jefe_top1_actual ? `${stats.jefe_top1_actual.nombre_marca} es el jefe #1` : 'Nadie es el jefe #1 todavía'}
+                {stats?.jefe_top1_actual
+                  ? `${stats.jefe_top1_actual.nombre_marca} ${t('is the #1 boss')}`
+                  : t('No one is the #1 boss yet')}
               </strong>
               <span className="text-sm text-tertiary">
                 {stats?.jefe_top1_actual
-                  ? `Pagó ${formatMonto(stats.jefe_top1_actual.monto_pagado)}. La marca que más paga es el jefe #1.`
-                  : 'La marca que pague más será el jefe #1.'}
+                  ? t('Paid {amount}. The brand that pays the most is the #1 boss.', {
+                      amount: formatMonto(stats.jefe_top1_actual.monto_pagado, lang),
+                    })
+                  : t('The brand that pays the most will be the #1 boss.')}
               </span>
             </div>
           </div>
@@ -102,47 +108,47 @@ export default function BossMenu({
             iconLeading={Trophy01}
             onClick={onPatrocinar}
           >
-            {stats?.jefe_top1_actual ? 'Reclamar tu Rango' : 'Sé el primer jefe #1'}
+            {stats?.jefe_top1_actual ? t('Claim your Rank') : t('Be the first #1 boss')}
           </Button>
         </section>
 
         <section className="glass-card animate-in fade-in slide-in-from-bottom-2 flex w-full flex-wrap items-center gap-6 rounded-xl border border-secondary p-5 shadow-lg shadow-black/30 duration-500">
           <PlayerPreview weaponLevel={weaponLevel} weaponSkinIndex={weaponSkinIndex} />
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs tracking-wide text-quaternary uppercase">Puntos</span>
+            <span className="text-xs tracking-wide text-quaternary uppercase">{t('Points')}</span>
             <strong className="text-lg text-primary">{points}</strong>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs tracking-wide text-quaternary uppercase">Arma</span>
+            <span className="text-xs tracking-wide text-quaternary uppercase">{t('Weapon')}</span>
             <strong className="text-lg text-primary">
               {WEAPON_LEVELS[weaponLevel].name}
               {maxed && bonusLevel > 0 && <span className="text-brand-secondary"> +{bonusLevel}</span>}
             </strong>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs tracking-wide text-quaternary uppercase">Vida máxima</span>
+            <span className="text-xs tracking-wide text-quaternary uppercase">{t('Max health')}</span>
             <strong className="flex items-center gap-1 text-lg text-primary">
               <Heart className="size-4 text-error-primary" />
               {currentMaxHp}
             </strong>
           </div>
           <div className="flex flex-col gap-0.5">
-            <span className="text-xs tracking-wide text-quaternary uppercase">Jefes vencidos (sesión)</span>
+            <span className="text-xs tracking-wide text-quaternary uppercase">{t('Bosses defeated (session)')}</span>
             <strong className="text-lg text-primary">{jefesVencidosTotal}</strong>
           </div>
           <Button className="ml-auto" color="primary" isDisabled={!canUpgrade} onClick={onUpgradeWeapon}>
             {maxed
-              ? `Mejorar daño y vida (${upgradeCost} pts) → ${nextMaxHp} HP`
-              : `Mejorar arma (${upgradeCost} pts) → ${nextMaxHp} HP`}
+              ? t('Upgrade damage & health ({cost} pts) → {hp} HP', { cost: upgradeCost, hp: nextMaxHp })
+              : t('Upgrade weapon ({cost} pts) → {hp} HP', { cost: upgradeCost, hp: nextMaxHp })}
           </Button>
         </section>
 
         <section className="glass-card flex w-full flex-col gap-4 rounded-xl border border-secondary p-5 shadow-lg shadow-black/30">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-brand-secondary">Jefes patrocinados</h2>
+            <h2 className="text-lg font-semibold text-brand-secondary">{t('Sponsored bosses')}</h2>
             {!loading && !error && jefes.length > 0 && (
               <span className="text-sm text-quaternary">
-                {jefesFiltrados.length} de {jefes.length}
+                {t('{shown} of {total}', { shown: jefesFiltrados.length, total: jefes.length })}
               </span>
             )}
           </div>
@@ -151,7 +157,7 @@ export default function BossMenu({
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input
                 icon={SearchLg}
-                placeholder="Buscar una marca…"
+                placeholder={t('Search a brand…')}
                 value={busqueda}
                 onChange={(value) => {
                   setBusqueda(value)
@@ -167,10 +173,10 @@ export default function BossMenu({
                 }}
                 className="rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary outline-none focus:ring-2 focus:ring-brand sm:w-56"
               >
-                <option value="">Todas las categorías</option>
+                <option value="">{t('All categories')}</option>
                 {CATEGORIAS.map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat}
+                    {t(CATEGORIA_LABEL_KEY[cat])}
                   </option>
                 ))}
               </select>
@@ -180,9 +186,9 @@ export default function BossMenu({
           {loading && <JefesSkeleton />}
           {error && (
             <div className="flex flex-col items-center gap-3 py-6 text-error-primary">
-              <p>{error}</p>
+              <p>{t(error)}</p>
               <Button color="secondary" onClick={onRetry}>
-                Reintentar
+                {t('Retry')}
               </Button>
             </div>
           )}
@@ -200,9 +206,9 @@ export default function BossMenu({
                     />
                   </div>
                 ))}
-                {jefes.length === 0 && <p className="py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>}
+                {jefes.length === 0 && <p className="py-6 text-center text-tertiary">{t('No boss is active yet.')}</p>}
                 {jefes.length > 0 && jefesFiltrados.length === 0 && (
-                  <p className="py-6 text-center text-tertiary">Ninguna marca coincide con tu búsqueda.</p>
+                  <p className="py-6 text-center text-tertiary">{t('No brand matches your search.')}</p>
                 )}
               </div>
 

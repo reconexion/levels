@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from '@untitledui/icons'
+import { useLanguage } from '../i18n/LanguageContext'
 
 // Classic truncated pagination: 1 … 4 5 6 … 57 — always shows first/last page,
 // the current page, and one sibling on each side; collapses the rest into "…".
@@ -23,17 +24,18 @@ function getPageNumbers(current, total, siblings = 1) {
 }
 
 export default function Pagination({ page, totalPages, onPageChange }) {
+  const { t } = useLanguage()
   if (totalPages <= 1) return null
 
   const pages = getPageNumbers(page, totalPages)
 
   return (
-    <nav className="flex items-center justify-center gap-1" aria-label="Paginación">
+    <nav className="flex items-center justify-center gap-1" aria-label={t('Pagination')}>
       <button
         type="button"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page === 1}
-        aria-label="Página anterior"
+        aria-label={t('Previous page')}
         className="flex size-8 items-center justify-center rounded-md text-tertiary transition-colors duration-150 hover:bg-primary_hover hover:text-tertiary_hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
       >
         <ChevronLeft className="size-4" />
@@ -64,7 +66,7 @@ export default function Pagination({ page, totalPages, onPageChange }) {
         type="button"
         onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         disabled={page === totalPages}
-        aria-label="Página siguiente"
+        aria-label={t('Next page')}
         className="flex size-8 items-center justify-center rounded-md text-tertiary transition-colors duration-150 hover:bg-primary_hover hover:text-tertiary_hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
       >
         <ChevronRight className="size-4" />

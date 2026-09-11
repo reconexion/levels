@@ -3,6 +3,7 @@ import { fetchJefes, fetchStats } from './api'
 import BossMenu from './components/BossMenu'
 import Patrocinar from './components/Patrocinar'
 import RainBackground from './components/RainBackground'
+import LanguageToggle from './components/LanguageToggle'
 import PlatformerGame from './game/PlatformerGame'
 import { MAX_WEAPON_LEVEL, POINTS_PER_VICTORY, isWeaponMaxed, upgradeCostFor } from './game/progression'
 import { useLocalStorage } from './utils/useLocalStorage'
@@ -38,7 +39,7 @@ function App() {
     setJefesError(null)
     fetchJefes()
       .then(setJefes)
-      .catch(() => setJefesError('No se pudo conectar con la API. ¿Está corriendo el backend?'))
+      .catch(() => setJefesError('Could not connect to the API. Is the backend running?'))
       .finally(() => setJefesLoading(false))
   }
 
@@ -47,7 +48,7 @@ function App() {
   useEffect(() => {
     fetchJefes()
       .then(setJefes)
-      .catch(() => setJefesError('No se pudo conectar con la API. ¿Está corriendo el backend?'))
+      .catch(() => setJefesError('Could not connect to the API. Is the backend running?'))
       .finally(() => setJefesLoading(false))
     fetchStats().then(setStats).catch(() => {})
   }, [])
@@ -127,6 +128,7 @@ function App() {
   return (
     <>
       <RainBackground />
+      {screen !== 'fight' && <LanguageToggle className="fixed top-4 right-4 z-50" />}
       {screenContent}
     </>
   )
