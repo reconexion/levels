@@ -5,6 +5,7 @@ import BossSkinPreview from './BossSkinPreview'
 import { Button } from './base/buttons/button'
 import { Input } from './base/input/input'
 import { BOSS_STYLES } from '../game/bossSkins'
+import { CATEGORIAS } from '../game/categorias'
 
 const POLL_MS = 2000
 const POLL_MAX_TRIES = 20 // ~40s antes de mostrar el aviso de "está tardando"
@@ -30,6 +31,7 @@ export default function Patrocinar({ stats, onBack }) {
   const [logoUrl, setLogoUrl] = useState('')
   const [colorHex, setColorHex] = useState('#f97316')
   const [skinId, setSkinId] = useState(BOSS_STYLES[0].id)
+  const [categoria, setCategoria] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [linkUrl, setLinkUrl] = useState('')
   const [montoDeseado, setMontoDeseado] = useState('')
@@ -93,6 +95,10 @@ export default function Patrocinar({ stats, onBack }) {
       setError('Rellena el nombre de tu marca y la URL de tu logo.')
       return
     }
+    if (!categoria) {
+      setError('Elige una categoría para tu marca.')
+      return
+    }
     if (!monto || monto <= 0) {
       setError('Ingresa un monto válido.')
       return
@@ -104,6 +110,7 @@ export default function Patrocinar({ stats, onBack }) {
         logoUrl: logoUrl.trim(),
         colorHex,
         skinId,
+        categoria,
         mensaje: mensaje.trim(),
         linkUrl: normalizeUrl(linkUrl),
         montoDeseado: monto,
@@ -258,6 +265,28 @@ export default function Patrocinar({ stats, onBack }) {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-secondary" htmlFor="categoria-select">
+              Categoría
+            </label>
+            <select
+              id="categoria-select"
+              value={categoria}
+              onChange={(e) => setCategoria(e.target.value)}
+              required
+              className="w-full rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="" disabled>
+                Selecciona una categoría
+              </option>
+              {CATEGORIAS.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs text-quaternary">Ayuda a que te encuentren en el buscador de jefes.</span>
           </div>
           <Input
             label="Mensaje de tu jefe (opcional)"

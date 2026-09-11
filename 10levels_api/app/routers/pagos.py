@@ -31,6 +31,7 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
         logo_url=payload.logo_url,
         color_hex=payload.color_hex,
         skin_id=payload.skin_id,
+        categoria=payload.categoria,
         mensaje=payload.mensaje,
         link_url=payload.link_url,
         monto_pagado=payload.monto_deseado,

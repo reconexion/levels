@@ -51,12 +51,7 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
   const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
 
   return (
-    <div
-      className={
-        'boss-card group relative w-full rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl' +
-        (jefe.es_top1 ? ' ring-2 ring-utility-yellow-400' : '')
-      }
-    >
+    <div className="boss-card group relative w-full rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl">
       {/* Clipped background layer only — the blob art, scrim, and hover glow live here so
           rounding the corners never crops anything that needs to spill past the edge. */}
       <div className="absolute inset-0 overflow-hidden rounded-2xl">
@@ -71,12 +66,6 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
           <div className="rank-bar-fill h-full" style={{ width: `${hpPct}%`, background: jefe.color_hex }} />
         </div>
       </div>
-
-      {jefe.es_top1 && (
-        <Badge className="absolute top-3 left-3 z-10" color="warning" size="sm">
-          <span className="animate-pulse">★</span>&nbsp;TOP 1
-        </Badge>
-      )}
 
       <div className="relative z-10 flex h-full flex-wrap items-center gap-4 p-4 text-white sm:flex-nowrap sm:p-5">
         <div className="flex shrink-0 items-center gap-2">
@@ -105,6 +94,11 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
             <span className="ml-1 text-sm font-semibold text-white/70">HP</span>
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {jefe.es_top1 && (
+              <Badge color="warning" size="sm">
+                <span className="animate-pulse">★</span>&nbsp;TOP 1
+              </Badge>
+            )}
             <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
               {tierName}
             </Badge>
@@ -120,26 +114,35 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
         </div>
 
         <div className="min-w-0 flex-1 basis-40">
-          <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
+            {jefe.categoria && (
+              <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-white/80">
+                {jefe.categoria}
+              </span>
+            )}
+          </div>
           <p className="truncate text-md font-bold sm:text-lg">{jefe.nombre_marca}</p>
           {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
           {jefe.link_url && (
-            <a
+            <Button
+              size="sm"
+              color="secondary"
+              iconLeading={LinkExternal01}
               href={jefe.link_url}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="mt-0.5 inline-flex max-w-full items-center gap-1 truncate text-xs font-medium text-white/80 underline decoration-white/40 underline-offset-2 hover:text-white hover:decoration-white"
-            >
-              <LinkExternal01 className="size-3 shrink-0" />
-              <span className="truncate">{formatHost(jefe.link_url)}</span>
-            </a>
+              aria-label={`Visitar ${formatHost(jefe.link_url)}`}
+            />
           )}
+          <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)}>
+            Retar
+          </Button>
         </div>
-
-        <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
-          Retar
-        </Button>
       </div>
     </div>
   )

@@ -1,10 +1,13 @@
-import { Heart, Trophy01, Users01 } from '@untitledui/icons'
+import { Heart, SearchLg, Trophy01, Users01 } from '@untitledui/icons'
 import { useState } from 'react'
 import { Button } from './base/buttons/button'
+import { Input } from './base/input/input'
 import BossCard from './BossCard'
 import Pagination from './Pagination'
 import PlayerPreview from './PlayerPreview'
+import { CATEGORIAS } from '../game/categorias'
 import { WEAPON_LEVELS, getPlayerMaxHp, isWeaponMaxed, upgradeCostFor } from '../game/progression'
+import logoSrc from '../assets/logologo.png'
 
 const JEFES_POR_PAGINA = 8
 
@@ -42,6 +45,8 @@ export default function BossMenu({
   stats,
 }) {
   const [page, setPage] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
+  const [categoriaFiltro, setCategoriaFiltro] = useState('')
 
   const maxed = isWeaponMaxed(weaponLevel)
   const upgradeCost = upgradeCostFor(weaponLevel, bonusLevel)
@@ -50,17 +55,29 @@ export default function BossMenu({
   const nextMaxHp = maxed ? getPlayerMaxHp(weaponLevel, bonusLevel + 1) : getPlayerMaxHp(weaponLevel + 1, bonusLevel)
 
   const maxHpVisible = jefes.reduce((max, j) => Math.max(max, j.hp_max), 1)
-  const totalPages = Math.max(1, Math.ceil(jefes.length / JEFES_POR_PAGINA))
-  // Jefes can arrive/refresh after `page` was set (e.g. a payment confirms) — clamp
-  // here instead of in an effect so a stale page number never renders empty.
+
+  const termino = busqueda.trim().toLowerCase()
+  const jefesFiltrados = jefes.filter((j) => {
+    const coincideNombre = !termino || j.nombre_marca.toLowerCase().includes(termino)
+    const coincideCategoria = !categoriaFiltro || j.categoria === categoriaFiltro
+    return coincideNombre && coincideCategoria
+  })
+
+  // Jefes can arrive/refresh after `page` was set (e.g. a payment confirms, or a
+  // filter shrinks the list) — clamp here instead of in an effect so a stale page
+  // number never renders empty.
+  const totalPages = Math.max(1, Math.ceil(jefesFiltrados.length / JEFES_POR_PAGINA))
   const currentPage = Math.min(page, totalPages)
-  const pageJefes = jefes.slice((currentPage - 1) * JEFES_POR_PAGINA, currentPage * JEFES_POR_PAGINA)
+  const pageJefes = jefesFiltrados.slice((currentPage - 1) * JEFES_POR_PAGINA, currentPage * JEFES_POR_PAGINA)
 
   return (
     <div className="min-h-svh px-4 py-10 text-primary sm:px-8">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-8">
         <header className="animate-in fade-in slide-in-from-top-4 flex flex-col items-center gap-3 text-center duration-700">
-          <h1 className="text-display-sm font-semibold text-brand-secondary">10 LEVELS</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-display-sm font-black text-brand-secondary">10</span>
+            <img src={logoSrc} alt="Levels" className="h-8 sm:h-10" />
+          </div>
           <p className="mt-1 text-md text-tertiary">Elige un jefe patrocinado y reta a ver quién es más fuerte.</p>
           {stats && (
             <span className="inline-flex items-center gap-1.5 text-sm text-quaternary">
@@ -82,8 +99,8 @@ export default function BossMenu({
               </strong>
               <span className="text-sm text-tertiary">
                 {stats?.jefe_top1_actual
-                  ? `Pagó ${formatMonto(stats.jefe_top1_actual.monto_pagado)} — supéralo y toma su lugar.`
-                  : 'Sé la primera marca en patrocinar un jefe.'}
+                  ? `Pagó ${formatMonto(stats.jefe_top1_actual.monto_pagado)}. La marca que más paga es el jefe #1.`
+                  : 'La marca que pague más será el jefe #1.'}
               </span>
             </div>
           </div>
@@ -94,7 +111,7 @@ export default function BossMenu({
             iconLeading={Trophy01}
             onClick={onPatrocinar}
           >
-            {stats?.jefe_top1_actual ? 'Reclamar Rango' : 'Sé el primer jefe #1'}
+            {stats?.jefe_top1_actual ? 'Reclamar tu Rango' : 'Sé el primer jefe #1'}
           </Button>
         </section>
 
@@ -133,9 +150,41 @@ export default function BossMenu({
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-brand-secondary">Jefes patrocinados</h2>
             {!loading && !error && jefes.length > 0 && (
-              <span className="text-sm text-quaternary">{jefes.length} activos</span>
+              <span className="text-sm text-quaternary">
+                {jefesFiltrados.length} de {jefes.length}
+              </span>
             )}
           </div>
+
+          {!loading && !error && jefes.length > 0 && (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                icon={SearchLg}
+                placeholder="Buscar una marca…"
+                value={busqueda}
+                onChange={(value) => {
+                  setBusqueda(value)
+                  setPage(1)
+                }}
+                wrapperClassName="flex-1"
+              />
+              <select
+                value={categoriaFiltro}
+                onChange={(e) => {
+                  setCategoriaFiltro(e.target.value)
+                  setPage(1)
+                }}
+                className="rounded-lg border border-secondary bg-primary px-3 py-2 text-sm text-primary outline-none focus:ring-2 focus:ring-brand sm:w-56"
+              >
+                <option value="">Todas las categorías</option>
+                {CATEGORIAS.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {loading && <JefesSkeleton />}
           {error && (
@@ -161,6 +210,9 @@ export default function BossMenu({
                   </div>
                 ))}
                 {jefes.length === 0 && <p className="py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>}
+                {jefes.length > 0 && jefesFiltrados.length === 0 && (
+                  <p className="py-6 text-center text-tertiary">Ninguna marca coincide con tu búsqueda.</p>
+                )}
               </div>
 
               <Pagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />

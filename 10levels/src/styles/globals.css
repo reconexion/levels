@@ -29,18 +29,13 @@
 }
 
 /* Dark glassmorphism panels — let the animated .rain-bg show through behind the UI
-   instead of a flat opaque surface. Two weights: `glass-card` for section-level
-   panels, `glass-row` for the individual boss rows nested inside them. */
+   instead of a flat opaque surface. Blur kept modest (not the 20px+saturate() this
+   started as) — backdrop-filter is one of the priciest paints in the browser, and this
+   class sits on several panels on screen at once. */
 @utility glass-card {
-    background: color-mix(in srgb, var(--color-bg-secondary) 62%, transparent);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-}
-
-@utility glass-row {
-    background: color-mix(in srgb, var(--color-bg-primary) 55%, transparent);
-    backdrop-filter: blur(14px) saturate(130%);
-    -webkit-backdrop-filter: blur(14px) saturate(130%);
+    background: color-mix(in srgb, var(--color-bg-secondary) 72%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 html,
@@ -215,29 +210,18 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .skin-preview-chrome {
-    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.65) 48%, transparent 66%);
+    /* mix-blend-mode avoided here on purpose — cheap on one element, not so cheap
+       multiplied across a page of boss cards each running their own blend layer. */
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.4) 48%, transparent 66%);
     background-size: 250% 100%;
     animation: skin-chrome-sweep 2.2s ease-in-out infinite;
-    mix-blend-mode: overlay;
-}
-
-@keyframes skin-holo-shift {
-    0% {
-        filter: hue-rotate(0deg);
-    }
-    100% {
-        filter: hue-rotate(360deg);
-    }
 }
 
 .skin-preview-holo {
     background: linear-gradient(120deg, #ff5ec8, #5ec8ff, #39ff9e, #ffd23f, #ff5ec8);
     background-size: 300% 100%;
-    opacity: 0.55;
-    mix-blend-mode: color-dodge;
-    animation:
-        skin-holo-shift 4s linear infinite,
-        skin-chrome-sweep 3s ease-in-out infinite;
+    opacity: 0.4;
+    animation: skin-chrome-sweep 3s ease-in-out infinite;
 }
 
 .skin-preview-gold-ring {

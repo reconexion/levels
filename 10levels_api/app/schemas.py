@@ -4,8 +4,10 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.boss_skins import BOSS_SKIN_IDS
+from app.categorias import CATEGORIAS
 
 SkinId = Literal[tuple(BOSS_SKIN_IDS)]
+Categoria = Literal[tuple(CATEGORIAS)]
 
 
 class JefeOut(BaseModel):
@@ -16,6 +18,7 @@ class JefeOut(BaseModel):
     logo_url: str
     color_hex: str
     skin_id: str
+    categoria: str
     mensaje: str | None
     link_url: str | None
     monto_pagado: float
@@ -31,6 +34,7 @@ class CrearCheckoutRequest(BaseModel):
     logo_url: str
     color_hex: str = Field(pattern=r"^#[0-9a-fA-F]{6}$")
     skin_id: SkinId
+    categoria: Categoria
     mensaje: str | None = Field(default=None, max_length=140)
     link_url: str | None = Field(default=None, max_length=500)
     monto_deseado: float = Field(gt=0)

@@ -52,7 +52,7 @@ export function fetchStats() {
   return request('/api/stats')
 }
 
-export function crearCheckout({ nombreMarca, logoUrl, colorHex, skinId, mensaje, linkUrl, montoDeseado }) {
+export function crearCheckout({ nombreMarca, logoUrl, colorHex, skinId, categoria, mensaje, linkUrl, montoDeseado }) {
   return request('/api/pagos/crear-checkout', {
     method: 'POST',
     body: JSON.stringify({
@@ -60,6 +60,7 @@ export function crearCheckout({ nombreMarca, logoUrl, colorHex, skinId, mensaje,
       logo_url: logoUrl,
       color_hex: colorHex,
       skin_id: skinId,
+      categoria,
       mensaje: mensaje || null,
       link_url: linkUrl || null,
       monto_deseado: montoDeseado,
