@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { sileo, Toaster } from 'sileo'
 import 'sileo/styles.css'
+import { ArrowLeft, Image03, Palette, RefreshCcw01, Target02, UserCircle, Zap } from '@untitledui/icons'
 import { atacar as apiAtacar, iniciarCombate } from '../api'
 import { bossStyleForSkinId } from './bossSkins'
 import { getBonusDamage, getPlayerMaxHp, isWeaponMaxed } from './progression'
@@ -2793,133 +2794,179 @@ export default function PlatformerGame({
           theme="dark" -> light "#f2f2f2" toast) — "light" is what actually renders a dark toast. */}
       <Toaster position="top-right" theme="light" />
       <div className="platformer-fight-bar">
-        <span className="platformer-fight-boss">{t('Challenging {name}', { name: jefe.nombre_marca })}</span>
+        <div className="platformer-fight-boss">
+          <span className="platformer-fight-boss-label">{t('Challenging')}</span>
+          <strong className="platformer-fight-boss-name">{jefe.nombre_marca}</strong>
+        </div>
         <div className="platformer-fight-actions">
-          <button type="button" className="platformer-exit-button" onClick={() => gameControlsRef.current?.resetFight()}>
-            {t('Restart fight')}
+          <button
+            type="button"
+            className="platformer-icon-button"
+            onClick={() => gameControlsRef.current?.resetFight()}
+            title={t('Restart fight')}
+          >
+            <RefreshCcw01 className="platformer-icon-button-icon" aria-hidden="true" />
+            <span>{t('Restart fight')}</span>
           </button>
-          <button type="button" className="platformer-exit-button" onClick={onExit}>
-            {t('Back to menu')}
+          <button type="button" className="platformer-icon-button" onClick={onExit} title={t('Back to menu')}>
+            <ArrowLeft className="platformer-icon-button-icon" aria-hidden="true" />
+            <span>{t('Back to menu')}</span>
           </button>
         </div>
       </div>
       {jefe.mensaje && (
-        <p className="platformer-boss-taunt" style={{ borderColor: jefe.color_hex }}>
+        <p className="platformer-boss-taunt" style={{ '--taunt-accent': jefe.color_hex }}>
           “{jefe.mensaje}”
         </p>
       )}
       <canvas ref={canvasRef} className="platformer-canvas" />
       <div className="platformer-controls">
-        <div className="platformer-customize">
-          <span className="platformer-customize-label">
+        <div className="platformer-stat-strip">
+          <Zap className="platformer-group-icon" aria-hidden="true" />
+          <span>
             {t('Weapon: {name}', { name: GUN_LEVELS[weaponLevel].name })}
-            {bonusLevel > 0 ? ` +${bonusLevel}` : ''} ·{' '}
+            {bonusLevel > 0 ? ` +${bonusLevel}` : ''}
+          </span>
+          <span className="platformer-stat-strip-dot" aria-hidden="true" />
+          <span>
             {t('Damage {dmg} · Fire rate {rate}s', {
               dmg: GUN_LEVELS[weaponLevel].damage + getBonusDamage(bonusLevel),
               rate: GUN_LEVELS[weaponLevel].fireRate.toFixed(2),
             })}
           </span>
         </div>
-        {isWeaponMaxed(weaponLevel) && onWeaponSkinChange && (
-          <div className="platformer-customize">
-            <label htmlFor="weapon-skin-select">{t('Weapon skin')}</label>
-            <select
-              id="weapon-skin-select"
-              value={weaponSkinIndex}
-              onChange={(e) => {
-                const idx = Number(e.target.value)
-                onWeaponSkinChange(idx)
-                sileo.info({ title: t('Weapon skin'), description: GUN_LEVELS[idx].name })
-              }}
-            >
-              {GUN_LEVELS.map((lvl, i) => (
-                <option key={lvl.id} value={i}>
-                  {lvl.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        <div className="platformer-customize">
-          <label htmlFor="bg-style-select">{t('Background')}</label>
-          <select id="bg-style-select" value={bgStyleIndex} onChange={onBgStyleChange}>
-            {BACKGROUNDS.map((bg, i) => (
-              <option key={bg.id} value={i}>
-                {t(bg.name)}
-              </option>
-            ))}
-          </select>
-          <input
-            type="color"
-            className="platformer-color-input"
-            title={t(BACKGROUNDS[bgStyleIndex].hintA)}
-            aria-label={t('Background color: {hint}', { hint: t(BACKGROUNDS[bgStyleIndex].hintA) })}
-            value={bgColorA}
-            onChange={onBgColorAChange}
-          />
-          <input
-            type="color"
-            className="platformer-color-input"
-            title={t(BACKGROUNDS[bgStyleIndex].hintB)}
-            aria-label={t('Background color: {hint}', { hint: t(BACKGROUNDS[bgStyleIndex].hintB) })}
-            value={bgColorB}
-            onChange={onBgColorBChange}
-          />
-        </div>
-        <div className="platformer-customize">
-          <label htmlFor="skin-select">{t('Skin')}</label>
-          <select id="skin-select" value={skinIndex} onChange={onSkinChange}>
-            {PLAYER_SKINS.map((skin, i) => (
-              <option key={skin.id} value={i}>
-                {t(skin.name)}
-              </option>
-            ))}
-          </select>
-          <label htmlFor="face-select">{t('Face')}</label>
-          <select id="face-select" value={faceIndex} onChange={onFaceChange}>
-            {FACE_OPTIONS.map((face, i) => (
-              <option key={face.id} value={i}>
-                {t(face.name)}
-              </option>
-            ))}
-          </select>
-          <span className="platformer-customize-label">{t('Color')}</span>
-          <div className="platformer-swatches" role="group" aria-label={t('Character color')}>
-            {PLAYER_COLORS.map((color, i) => (
-              <button
-                key={color.id}
-                type="button"
-                title={t(color.name)}
-                aria-label={t(color.name)}
-                aria-pressed={colorIndex === i}
-                className={`platformer-swatch${colorIndex === i ? ' is-selected' : ''}`}
-                style={{ background: color.hex }}
-                onClick={() => onColorChange(i)}
+        <div className="platformer-chip-row">
+          {isWeaponMaxed(weaponLevel) && onWeaponSkinChange && (
+            <div className="platformer-chip">
+              <label htmlFor="weapon-skin-select" className="platformer-chip-label">
+                <Zap className="platformer-group-icon" aria-hidden="true" />
+                {t('Weapon skin')}
+              </label>
+              <select
+                id="weapon-skin-select"
+                value={weaponSkinIndex}
+                onChange={(e) => {
+                  const idx = Number(e.target.value)
+                  onWeaponSkinChange(idx)
+                  sileo.info({ title: t('Weapon skin'), description: GUN_LEVELS[idx].name })
+                }}
+              >
+                {GUN_LEVELS.map((lvl, i) => (
+                  <option key={lvl.id} value={i}>
+                    {lvl.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="platformer-chip">
+            <label htmlFor="bg-style-select" className="platformer-chip-label">
+              <Image03 className="platformer-group-icon" aria-hidden="true" />
+              {t('Background')}
+            </label>
+            <div className="platformer-chip-row-inline">
+              <select id="bg-style-select" value={bgStyleIndex} onChange={onBgStyleChange}>
+                {BACKGROUNDS.map((bg, i) => (
+                  <option key={bg.id} value={i}>
+                    {t(bg.name)}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="color"
+                className="platformer-color-input"
+                title={t(BACKGROUNDS[bgStyleIndex].hintA)}
+                aria-label={t('Background color: {hint}', { hint: t(BACKGROUNDS[bgStyleIndex].hintA) })}
+                value={bgColorA}
+                onChange={onBgColorAChange}
               />
-            ))}
+              <input
+                type="color"
+                className="platformer-color-input"
+                title={t(BACKGROUNDS[bgStyleIndex].hintB)}
+                aria-label={t('Background color: {hint}', { hint: t(BACKGROUNDS[bgStyleIndex].hintB) })}
+                value={bgColorB}
+                onChange={onBgColorBChange}
+              />
+            </div>
           </div>
-        </div>
-        <div className="platformer-customize">
-          <label htmlFor="crosshair-style-select">{t('Crosshair')}</label>
-          <select id="crosshair-style-select" value={crosshairStyleIndex} onChange={onCrosshairStyleChange}>
-            {CROSSHAIR_STYLES.map((style, i) => (
-              <option key={style.id} value={i}>
-                {t(style.name)}
-              </option>
-            ))}
-          </select>
-          <input
-            type="color"
-            className="platformer-color-input"
-            title={t('Crosshair color')}
-            aria-label={t('Crosshair color')}
-            value={crosshairColor}
-            onChange={onCrosshairColorChange}
-          />
+          <div className="platformer-chip">
+            <span className="platformer-chip-label">
+              <UserCircle className="platformer-group-icon" aria-hidden="true" />
+              {t('Character')}
+            </span>
+            <div className="platformer-chip-row-inline">
+              <select id="skin-select" aria-label={t('Skin')} value={skinIndex} onChange={onSkinChange}>
+                {PLAYER_SKINS.map((skin, i) => (
+                  <option key={skin.id} value={i}>
+                    {t(skin.name)}
+                  </option>
+                ))}
+              </select>
+              <select id="face-select" aria-label={t('Face')} value={faceIndex} onChange={onFaceChange}>
+                {FACE_OPTIONS.map((face, i) => (
+                  <option key={face.id} value={i}>
+                    {t(face.name)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="platformer-chip">
+            <span className="platformer-chip-label">
+              <Palette className="platformer-group-icon" aria-hidden="true" />
+              {t('Color')}
+            </span>
+            <div className="platformer-swatches" role="group" aria-label={t('Character color')}>
+              {PLAYER_COLORS.map((color, i) => (
+                <button
+                  key={color.id}
+                  type="button"
+                  title={t(color.name)}
+                  aria-label={t(color.name)}
+                  aria-pressed={colorIndex === i}
+                  className={`platformer-swatch${colorIndex === i ? ' is-selected' : ''}`}
+                  style={{ background: color.hex }}
+                  onClick={() => onColorChange(i)}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="platformer-chip">
+            <label htmlFor="crosshair-style-select" className="platformer-chip-label">
+              <Target02 className="platformer-group-icon" aria-hidden="true" />
+              {t('Crosshair')}
+            </label>
+            <div className="platformer-chip-row-inline">
+              <select id="crosshair-style-select" value={crosshairStyleIndex} onChange={onCrosshairStyleChange}>
+                {CROSSHAIR_STYLES.map((style, i) => (
+                  <option key={style.id} value={i}>
+                    {t(style.name)}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="color"
+                className="platformer-color-input"
+                title={t('Crosshair color')}
+                aria-label={t('Crosshair color')}
+                value={crosshairColor}
+                onChange={onCrosshairColorChange}
+              />
+            </div>
+          </div>
         </div>
       </div>
       <p className="platformer-hint">
-        {t('Move with WASD / Arrows')} &nbsp;·&nbsp; {t('Space to jump')} &nbsp;·&nbsp; {t('Click to shoot at the boss')}
+        <span>
+          <kbd>WASD</kbd> / <kbd>{t('Arrows')}</kbd> {t('to move')}
+        </span>
+        <span className="platformer-hint-dot" aria-hidden="true" />
+        <span>
+          <kbd>{t('Space')}</kbd> {t('to jump')}
+        </span>
+        <span className="platformer-hint-dot" aria-hidden="true" />
+        <span>{t('Click to shoot at the boss')}</span>
       </p>
     </div>
   )
