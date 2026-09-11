@@ -1,35 +1,11 @@
-import { ArrowRight, Flash, Heart, Trophy01, Users01, Zap } from '@untitledui/icons'
+import { Heart, Trophy01, Users01 } from '@untitledui/icons'
 import { useState } from 'react'
-import { Avatar } from './base/avatar/avatar'
-import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
-import BossSkinPreview from './BossSkinPreview'
+import BossCard from './BossCard'
 import Pagination from './Pagination'
-import { bossStyleForSkinId } from '../game/bossSkins'
-import { bossTierNameForMonto } from '../game/bossTier'
 import { WEAPON_LEVELS, getPlayerMaxHp, nextUpgradeCost } from '../game/progression'
 
-const TIER_BADGE_COLOR = {
-  Noob: 'gray',
-  Principiante: 'gray',
-  Amateur: 'blue',
-  Competente: 'blue',
-  Avanzado: 'success',
-  Experto: 'success',
-  Élite: 'purple',
-  Maestro: 'warning',
-  Leyenda: 'pink',
-  PRO: 'brand',
-}
-
 const JEFES_POR_PAGINA = 8
-
-// Rank 1/2/3 get a medal treatment; everyone else gets a plain numbered circle.
-const MEDAL_STYLE = [
-  { ring: 'ring-utility-yellow-300', bg: 'bg-utility-yellow-50', text: 'text-utility-yellow-700', emoji: '🥇' },
-  { ring: 'ring-utility-slate-300', bg: 'bg-utility-slate-50', text: 'text-utility-slate-700', emoji: '🥈' },
-  { ring: 'ring-utility-orange-300', bg: 'bg-utility-orange-50', text: 'text-utility-orange-700', emoji: '🥉' },
-]
 
 function formatMonto(monto) {
   return new Intl.NumberFormat('es-MX', {
@@ -39,50 +15,13 @@ function formatMonto(monto) {
   }).format(monto)
 }
 
-function StatPill({ icon: Icon, children }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-tertiary px-2 py-1 text-xs font-medium text-secondary">
-      <Icon className="size-3.5 text-fg-quaternary" />
-      {children}
-    </span>
-  )
-}
-
-function RankBadge({ rank }) {
-  const medal = MEDAL_STYLE[rank - 1]
-  if (!medal) {
-    return (
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-tertiary text-sm font-bold text-tertiary">
-        {rank}
-      </span>
-    )
-  }
-  return (
-    <span
-      className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ring-2 ${medal.bg} ${medal.text} ${medal.ring} ${rank === 1 ? 'rank-crown' : ''}`}
-      title={`Puesto ${rank}`}
-    >
-      {medal.emoji}
-    </span>
-  )
-}
-
 function JefesSkeleton() {
   return (
-    <ul className="flex w-full flex-col gap-3">
-      {[0, 1, 2].map((i) => (
-        <li key={i} className="glass-row flex items-center gap-4 rounded-xl border border-secondary p-4 shadow-sm">
-          <div className="skeleton-shimmer size-8 shrink-0 rounded-full" />
-          <div className="skeleton-shimmer size-14 shrink-0 rounded-[10px]" />
-          <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="skeleton-shimmer h-4 w-40 rounded-md" />
-            <div className="skeleton-shimmer h-3 w-24 rounded-md" />
-            <div className="skeleton-shimmer h-5 w-full max-w-xs rounded-md" />
-          </div>
-          <div className="skeleton-shimmer h-9 w-24 shrink-0 rounded-lg" />
-        </li>
+    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="skeleton-shimmer w-full rounded-2xl" style={{ aspectRatio: '342 / 196' }} />
       ))}
-    </ul>
+    </div>
   )
 }
 
@@ -201,87 +140,21 @@ export default function BossMenu({
 
           {!loading && !error && (
             <>
-              <ul className="flex w-full flex-col gap-3">
-                {pageJefes.map((jefe, i) => {
-                  const rank = (currentPage - 1) * JEFES_POR_PAGINA + i + 1
-                  const tierName = bossTierNameForMonto(jefe.monto_pagado)
-                  const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
-                  return (
-                    <li
-                      key={jefe.id}
-                      style={{ animationDelay: `${i * 70}ms` }}
-                      className={
-                        'ranked-row glass-row group relative flex items-center gap-4 rounded-xl border p-4 pt-6 shadow-md shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg' +
-                        (jefe.es_top1 ? ' border-utility-yellow-300' : ' border-secondary')
-                      }
-                    >
-                      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
-                        <div
-                          className="absolute inset-0 opacity-[0.06] transition-opacity duration-300 group-hover:opacity-[0.12]"
-                          style={{ background: `linear-gradient(120deg, ${jefe.color_hex}, transparent 70%)` }}
-                        />
-                      </div>
-
-                      <RankBadge rank={rank} />
-
-                      {jefe.es_top1 && (
-                        <Badge className="absolute top-0 left-14 z-10" color="warning" size="sm">
-                          <span className="animate-pulse">★</span>&nbsp;TOP 1
-                        </Badge>
-                      )}
-
-                      <div className="relative z-10 flex shrink-0 flex-col items-center gap-1.5">
-                        <div
-                          className="rounded-[10px] p-0.5"
-                          style={{ background: jefe.color_hex }}
-                        >
-                          <Avatar src={jefe.logo_url} alt={jefe.nombre_marca} size="xl" rounded={false} />
-                        </div>
-                        <BossSkinPreview jefe={jefe} size={56} />
-                        <span className="text-[10px] leading-none text-quaternary">
-                          {bossStyleForSkinId(jefe.skin_id).name}
-                        </span>
-                      </div>
-
-                      <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <strong className="truncate text-md" style={{ color: jefe.color_hex }}>
-                            {jefe.nombre_marca}
-                          </strong>
-                          <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
-                            {tierName}
-                          </Badge>
-                        </div>
-                        <span className="text-sm font-medium text-tertiary">
-                          {formatMonto(jefe.monto_pagado)} pagados
-                        </span>
-                        {jefe.mensaje && <p className="truncate text-sm text-tertiary italic">“{jefe.mensaje}”</p>}
-                        <div className="flex flex-wrap gap-1.5">
-                          <StatPill icon={Heart}>{jefe.hp_max} HP</StatPill>
-                          <StatPill icon={Zap}>{jefe.danio_por_golpe} daño</StatPill>
-                          <StatPill icon={Flash}>cada {jefe.frecuencia_ataque_segundos}s</StatPill>
-                        </div>
-                        <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-tertiary">
-                          <div
-                            className="rank-bar-fill h-full rounded-full"
-                            style={{ width: `${hpPct}%`, background: jefe.color_hex }}
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        className="relative z-10"
-                        color="primary"
-                        iconTrailing={ArrowRight}
-                        onClick={() => onSelectJefe(jefe)}
-                      >
-                        Retar
-                      </Button>
-                    </li>
-                  )
-                })}
-                {jefes.length === 0 && <p className="py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>}
-              </ul>
+              <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                {pageJefes.map((jefe, i) => (
+                  <div key={jefe.id} className="ranked-row" style={{ animationDelay: `${i * 70}ms` }}>
+                    <BossCard
+                      jefe={jefe}
+                      rank={(currentPage - 1) * JEFES_POR_PAGINA + i + 1}
+                      maxHpVisible={maxHpVisible}
+                      onSelect={onSelectJefe}
+                    />
+                  </div>
+                ))}
+                {jefes.length === 0 && (
+                  <p className="col-span-full py-6 text-center text-tertiary">Todavía no hay jefes activos.</p>
+                )}
+              </div>
 
               <Pagination page={currentPage} totalPages={totalPages} onPageChange={setPage} />
             </>

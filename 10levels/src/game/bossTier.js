@@ -25,3 +25,18 @@ export function bossTierIndexForMonto(monto) {
 export function bossTierNameForMonto(monto) {
   return BOSS_TIER_NAMES[bossTierIndexForMonto(monto)]
 }
+
+// Badge color per tier name, shared between the boss cards and anywhere else a tier
+// needs a consistent color (kept here so it can't drift out of sync with the names above).
+export const TIER_BADGE_COLOR = {
+  Noob: 'gray',
+  Principiante: 'gray',
+  Amateur: 'blue',
+  Competente: 'blue',
+  Avanzado: 'success',
+  Experto: 'success',
+  Élite: 'purple',
+  Maestro: 'warning',
+  Leyenda: 'pink',
+  PRO: 'brand',
+}
