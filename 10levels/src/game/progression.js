@@ -3,6 +3,18 @@
 
 export const POINTS_PER_VICTORY = 50
 
+// Reward scales with the boss's rank across the *entire* sponsored-boss leaderboard
+// (1 = the current #1 boss — most HP/damage, hardest fight, biggest reward), not with
+// wherever it happens to land in a filtered/paginated view.
+export const REWARD_POINTS_FOR_RANK_1 = 200
+export const REWARD_POINTS_STEP_PER_RANK = 15
+export const REWARD_POINTS_MIN = 20
+
+export function pointsForRank(rank) {
+  if (!rank || rank < 1) return POINTS_PER_VICTORY
+  return Math.max(REWARD_POINTS_MIN, REWARD_POINTS_FOR_RANK_1 - (rank - 1) * REWARD_POINTS_STEP_PER_RANK)
+}
+
 // Cost in points to reach that weapon level (index) from the previous one.
 // Index 0 (starting weapon) has no cost. Each tier costs noticeably more than the
 // last, so the grind ramps up rather than staying flat.

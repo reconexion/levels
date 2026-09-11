@@ -5,7 +5,7 @@ import Patrocinar from './components/Patrocinar'
 import RainBackground from './components/RainBackground'
 import LanguageToggle from './components/LanguageToggle'
 import PlatformerGame from './game/PlatformerGame'
-import { MAX_WEAPON_LEVEL, POINTS_PER_VICTORY, isWeaponMaxed, upgradeCostFor } from './game/progression'
+import { MAX_WEAPON_LEVEL, isWeaponMaxed, pointsForRank, upgradeCostFor } from './game/progression'
 import { useLocalStorage } from './utils/useLocalStorage'
 
 const RETURN_TO_MENU_DELAY_MS = 2600
@@ -62,8 +62,11 @@ function App() {
     setScreen('menu')
   }
 
-  const handleVictory = () => {
-    setPoints((p) => p + POINTS_PER_VICTORY)
+  const handleVictory = (jefe) => {
+    // Rank across the full leaderboard (jefes arrives sorted by monto_pagado desc from
+    // the API) — not wherever the boss happened to sit in a filtered/paginated view.
+    const rank = jefes.findIndex((j) => j.id === jefe.id) + 1
+    setPoints((p) => p + pointsForRank(rank))
     setJefesVencidosTotal((n) => n + 1)
     setTimeout(() => setScreen('menu'), RETURN_TO_MENU_DELAY_MS)
   }

@@ -1,4 +1,4 @@
-import { ArrowRight, Flash, Heart, LinkExternal01, Zap } from '@untitledui/icons'
+import { ArrowRight, Coins01, Flash, Heart, LinkExternal01, Zap } from '@untitledui/icons'
 import { Avatar } from './base/avatar/avatar'
 import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
@@ -39,7 +39,7 @@ function CardBlob({ id, colorA, colorB }) {
   )
 }
 
-export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
+export default function BossCard({ jefe, rank, rewardPoints, maxHpVisible, onSelect }) {
   const { t, lang } = useLanguage()
   const tierName = bossTierNameForMonto(jefe.monto_pagado)
   const colorB = shadeColorHex(jefe.color_hex, -42)
@@ -156,9 +156,20 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
           {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
         </div>
 
-        <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
-          {t('Challenge')}
-        </Button>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)}>
+            {t('Challenge')}
+          </Button>
+          {rewardPoints > 0 && (
+            <span
+              className="inline-flex items-center gap-1 text-xs font-semibold text-utility-yellow-300"
+              title={t('Points earned for defeating this boss')}
+            >
+              <Coins01 className="size-3.5" />
+              {t('+{points} pts', { points: rewardPoints })}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )

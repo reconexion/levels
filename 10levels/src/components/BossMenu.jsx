@@ -7,7 +7,7 @@ import Pagination from './Pagination'
 import PlayerPreview from './PlayerPreview'
 import { useLanguage } from '../i18n/LanguageContext'
 import { CATEGORIAS, CATEGORIA_LABEL_KEY } from '../game/categorias'
-import { WEAPON_LEVELS, getPlayerMaxHp, isWeaponMaxed, upgradeCostFor } from '../game/progression'
+import { WEAPON_LEVELS, getPlayerMaxHp, isWeaponMaxed, pointsForRank, upgradeCostFor } from '../game/progression'
 import logoSrc from '../assets/logologo.png'
 
 const JEFES_POR_PAGINA = 8
@@ -196,16 +196,23 @@ export default function BossMenu({
           {!loading && !error && (
             <>
               <div className="flex w-full flex-col gap-4">
-                {pageJefes.map((jefe, i) => (
-                  <div key={jefe.id} className="ranked-row" style={{ animationDelay: `${i * 70}ms` }}>
-                    <BossCard
-                      jefe={jefe}
-                      rank={(currentPage - 1) * JEFES_POR_PAGINA + i + 1}
-                      maxHpVisible={maxHpVisible}
-                      onSelect={onSelectJefe}
-                    />
-                  </div>
-                ))}
+                {pageJefes.map((jefe, i) => {
+                  // Global rank across the full (unfiltered) leaderboard — `jefes` arrives
+                  // sorted by monto_pagado desc from the API — so the reward shown never
+                  // shifts just because a search/category filter is active.
+                  const globalRank = jefes.findIndex((j) => j.id === jefe.id) + 1
+                  return (
+                    <div key={jefe.id} className="ranked-row lazy-column" style={{ animationDelay: `${i * 70}ms` }}>
+                      <BossCard
+                        jefe={jefe}
+                        rank={(currentPage - 1) * JEFES_POR_PAGINA + i + 1}
+                        rewardPoints={pointsForRank(globalRank)}
+                        maxHpVisible={maxHpVisible}
+                        onSelect={onSelectJefe}
+                      />
+                    </div>
+                  )
+                })}
                 {jefes.length === 0 && <p className="py-6 text-center text-tertiary">{t('No boss is active yet.')}</p>}
                 {jefes.length > 0 && jefesFiltrados.length === 0 && (
                   <p className="py-6 text-center text-tertiary">{t('No brand matches your search.')}</p>

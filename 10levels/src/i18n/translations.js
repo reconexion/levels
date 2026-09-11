@@ -34,6 +34,8 @@ export const translations = {
     Challenge: 'Retar',
     '{amount} paid': '{amount} pagados',
     'Visit {name}’s page': 'Visitar la página de {name}',
+    '+{points} pts': '+{points} pts',
+    'Points earned for defeating this boss': 'Puntos que ganas al vencer a este jefe',
 
     // Boss tiers (derived from monto_pagado, never stored — see game/bossTier.js)
     Noob: 'Noob',
