@@ -36,7 +36,7 @@ class CrearCheckoutRequest(BaseModel):
     skin_id: SkinId
     categoria: Categoria
     mensaje: str | None = Field(default=None, max_length=140)
-    link_url: str | None = Field(default=None, max_length=500)
+    link_url: str = Field(min_length=1, max_length=500)
     monto_deseado: float = Field(gt=0)
 
 

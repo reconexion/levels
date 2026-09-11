@@ -1,4 +1,4 @@
-import { Heart, SearchLg, Trophy01, Users01 } from '@untitledui/icons'
+import { Heart, SearchLg, Trophy01 } from '@untitledui/icons'
 import { useState } from 'react'
 import { Button } from './base/buttons/button'
 import { Input } from './base/input/input'
@@ -74,17 +74,8 @@ export default function BossMenu({
     <div className="min-h-svh px-4 py-10 text-primary sm:px-8">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-8">
         <header className="animate-in fade-in slide-in-from-top-4 flex flex-col items-center gap-3 text-center duration-700">
-          <div className="flex items-center gap-2">
-            <span className="text-display-sm font-black text-brand-secondary">10</span>
-            <img src={logoSrc} alt="Levels" className="h-8 sm:h-10" />
-          </div>
+          <img src={logoSrc} alt="Levels" className="h-9 sm:h-11" />
           <p className="mt-1 text-md text-tertiary">Elige un jefe patrocinado y reta a ver quién es más fuerte.</p>
-          {stats && (
-            <span className="inline-flex items-center gap-1.5 text-sm text-quaternary">
-              <Users01 className="size-4" />
-              {stats.jugadores_activos_estimado} jugadores activos
-            </span>
-          )}
         </header>
 
         <section className="cta-sponsor glass-card animate-in fade-in slide-in-from-bottom-2 relative flex w-full flex-wrap items-center justify-between gap-4 overflow-hidden rounded-xl border-2 border-utility-brand-400/50 p-5 shadow-lg shadow-black/40 duration-500">

@@ -295,3 +295,22 @@ input[type="search"]::-webkit-search-cancel-button {
     border-radius: 9999px;
     background: rgba(0, 0, 0, 0.65);
 }
+
+/* ---- Boss card name link (BossCard.jsx) — on hover, the name takes the sponsor's
+   own brand color with a black outline, like a comic-book title card. ---- */
+.boss-name-link {
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    -webkit-text-stroke: 0 transparent;
+    transition:
+        color 0.15s ease,
+        -webkit-text-stroke-color 0.15s ease;
+}
+
+.boss-name-link:hover,
+.boss-name-link:focus-visible {
+    color: var(--boss-accent, #fff);
+    -webkit-text-stroke: 1px #000;
+    text-shadow: none;
+}

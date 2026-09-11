@@ -53,7 +53,7 @@ def crear_checkout(payload: CrearCheckoutRequest, db: Session = Depends(get_db))
                     "currency": "mxn",
                     "unit_amount": round(payload.monto_deseado * 100),
                     "product_data": {
-                        "name": f"10 Levels — jefe patrocinado: {payload.nombre_marca}",
+                        "name": f"Levels — jefe patrocinado: {payload.nombre_marca}",
                     },
                 },
                 "quantity": 1,

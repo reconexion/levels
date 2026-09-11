@@ -99,6 +99,10 @@ export default function Patrocinar({ stats, onBack }) {
       setError('Elige una categoría para tu marca.')
       return
     }
+    if (!linkUrl.trim()) {
+      setError('Ingresa el link de tu página.')
+      return
+    }
     if (!monto || monto <= 0) {
       setError('Ingresa un monto válido.')
       return
@@ -297,12 +301,13 @@ export default function Patrocinar({ stats, onBack }) {
             onChange={setMensaje}
           />
           <Input
-            label="Link de tu página (opcional)"
-            hint="Se muestra como botón en su tarjeta para que jueguen y visiten tu sitio."
+            label="Link de tu página"
+            hint="Al hacer clic en el nombre de tu jefe, la gente llega aquí."
             icon={LinkExternal01}
             placeholder="tusitio.com"
             value={linkUrl}
             onChange={setLinkUrl}
+            isRequired
           />
           <div className="flex flex-col gap-1.5">
             <Input

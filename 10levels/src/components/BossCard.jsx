@@ -1,4 +1,4 @@
-import { ArrowRight, Flash, LinkExternal01, Zap } from '@untitledui/icons'
+import { ArrowRight, Flash, Heart, LinkExternal01, Zap } from '@untitledui/icons'
 import { Avatar } from './base/avatar/avatar'
 import { Badge } from './base/badges/badges'
 import { Button } from './base/buttons/button'
@@ -6,6 +6,7 @@ import BossSkinPreview from './BossSkinPreview'
 import RankBadge from './RankBadge'
 import { shadeColorHex } from '../game/bossSkins'
 import { bossTierNameForMonto, TIER_BADGE_COLOR } from '../game/bossTier'
+import { categoriaEstiloFor } from '../game/categorias'
 
 function formatMonto(monto) {
   return new Intl.NumberFormat('es-MX', {
@@ -13,14 +14,6 @@ function formatMonto(monto) {
     currency: 'MXN',
     maximumFractionDigits: 0,
   }).format(monto)
-}
-
-function formatHost(url) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '')
-  } catch {
-    return url
-  }
 }
 
 // The blob-shaped card background — same path/viewBox as the uiverse.io weather-card
@@ -49,14 +42,28 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
   const tierName = bossTierNameForMonto(jefe.monto_pagado)
   const colorB = shadeColorHex(jefe.color_hex, -42)
   const hpPct = Math.max(4, Math.round((jefe.hp_max / maxHpVisible) * 100))
+  const { icon: CategoriaIcon, tint: categoriaTint } = categoriaEstiloFor(jefe.categoria)
+
+  const nombreContent = (
+    <>
+      {jefe.nombre_marca}
+      {jefe.link_url && <LinkExternal01 className="ml-1 inline size-4 -translate-y-0.5 opacity-70" />}
+    </>
+  )
 
   return (
     <div className="boss-card group relative w-full rounded-2xl shadow-lg shadow-black/40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl">
-      {/* Clipped background layer only — the blob art, scrim, and hover glow live here so
-          rounding the corners never crops anything that needs to spill past the edge. */}
+      {/* Clipped background layer only — the blob art, scrim, hover glow, and category
+          watermark live here so rounding the corners never crops anything that needs to
+          spill past the edge (the avatar/skin badge below does). */}
       <div className="absolute inset-0 overflow-hidden rounded-2xl">
         <CardBlob id={`boss-blob-${jefe.id}`} colorA={jefe.color_hex} colorB={colorB} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/10 to-black/35" aria-hidden="true" />
+        {/* Category watermark — the one visible "the design changes per category" cue. */}
+        <CategoriaIcon
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-4 right-16 size-28 -rotate-12 text-white opacity-[0.12]"
+        />
         <div
           aria-hidden="true"
           className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -89,9 +96,10 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
         </div>
 
         <div className="flex shrink-0 flex-col">
-          <p className="text-3xl leading-none font-black tracking-tight sm:text-4xl">
+          <p className="flex items-center gap-1 text-3xl leading-none font-black tracking-tight sm:text-4xl">
+            <Heart className="size-5 text-utility-red-400 sm:size-6" />
             {Math.round(jefe.hp_max).toLocaleString('es-MX')}
-            <span className="ml-1 text-sm font-semibold text-white/70">HP</span>
+            <span className="ml-0.5 text-sm font-semibold text-white/70">HP</span>
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             {jefe.es_top1 && (
@@ -102,11 +110,11 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
             <Badge color={TIER_BADGE_COLOR[tierName] ?? 'gray'} size="sm">
               {tierName}
             </Badge>
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-white/70">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-utility-orange-300">
               <Zap className="size-3" />
               {jefe.danio_por_golpe}
             </span>
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-white/70">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-utility-blue-300">
               <Flash className="size-3" />
               {jefe.frecuencia_ataque_segundos}s
             </span>
@@ -117,32 +125,36 @@ export default function BossCard({ jefe, rank, maxHpVisible, onSelect }) {
           <div className="flex flex-wrap items-center gap-1.5">
             <p className="truncate text-xs font-medium text-white/60">{formatMonto(jefe.monto_pagado)} pagados</p>
             {jefe.categoria && (
-              <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-white/80">
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-white/90"
+                style={{ boxShadow: `inset 0 0 0 1px ${categoriaTint}55` }}
+              >
+                <CategoriaIcon className="size-2.5" style={{ color: categoriaTint }} />
                 {jefe.categoria}
               </span>
             )}
           </div>
-          <p className="truncate text-md font-bold sm:text-lg">{jefe.nombre_marca}</p>
-          {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          {jefe.link_url && (
-            <Button
-              size="sm"
-              color="secondary"
-              iconLeading={LinkExternal01}
+          {jefe.link_url ? (
+            <a
               href={jefe.link_url}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              aria-label={`Visitar ${formatHost(jefe.link_url)}`}
-            />
+              title={`Visitar la página de ${jefe.nombre_marca}`}
+              className="boss-name-link block truncate text-lg font-extrabold sm:text-xl"
+              style={{ '--boss-accent': jefe.color_hex }}
+            >
+              {nombreContent}
+            </a>
+          ) : (
+            <p className="truncate text-lg font-extrabold sm:text-xl">{nombreContent}</p>
           )}
-          <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)}>
-            Retar
-          </Button>
+          {jefe.mensaje && <p className="truncate text-xs text-white/70 italic">“{jefe.mensaje}”</p>}
         </div>
+
+        <Button size="sm" color="primary" iconTrailing={ArrowRight} onClick={() => onSelect(jefe)} className="shrink-0">
+          Retar
+        </Button>
       </div>
     </div>
   )

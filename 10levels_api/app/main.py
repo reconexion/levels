@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import combate, jefes, pagos, stats, webhooks
 
-app = FastAPI(title="10 Levels API")
+app = FastAPI(title="Levels API")
 
 app.add_middleware(
     CORSMiddleware,
